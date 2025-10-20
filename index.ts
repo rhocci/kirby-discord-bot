@@ -1,12 +1,20 @@
 import { Client, Events, GatewayIntentBits } from 'discord.js';
+import fs from 'fs';
 import 'dotenv/config';
 import dayjs from 'dayjs';
-import fs from 'fs';
+import utc from 'dayjs/plugin/utc.js';
+import timezone from 'dayjs/plugin/timezone.js';
+import 'dayjs/locale/ko.js';
 
 const token = process.env.DISCORD_TOKEN;
 
 const PREFIX = '!';
 const attendanceLog = './data/attendance.json';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.locale('ko');
+dayjs.tz.setDefault('Asia/Seoul');
 
 const client = new Client({
   intents: [
@@ -27,27 +35,33 @@ client.on('messageCreate', async (message) => {
   const command = args.shift()?.toLowerCase();
 
   if (command === '출석') {
-    const username = message.author.username;
-    const today = dayjs().format('YYYY/MM/DD');
-    const now = dayjs().format('HH:mm');
+    const username = message.author.displayName || message.author.username;
+    const today = dayjs().format('YYYY-MM-DD');
+    const now = dayjs().format('YYYY/MM/DD(ddd) HH:mm');
 
-    const currentTime = dayjs(`${today} ${now}`, 'YYYY/MM/DD HH:mm');
+    const currentTime = dayjs(`${today} ${now}`, 'YYYY-MM-DD HH:mm');
     // 지각 시간 바뀌면 조정 필요
-    const lateTime = dayjs(`${today} 10:00`, 'YYYY/MM/DD HH:mm');
+    const lateTime = dayjs(`${today} 10:00`, 'YYYY-MM-DD HH:mm');
 
     const startOfWeek = dayjs().startOf('week').add(1, 'day');
     const endOfWeek = dayjs().add(4, 'day');
 
     let logs: any = {};
+
     if (fs.existsSync(attendanceLog)) {
-      logs = JSON.parse(fs.readFileSync(attendanceLog, 'utf-8'));
+      const raw = fs.readFileSync(attendanceLog, 'utf-8');
+      logs = raw.trim() ? JSON.parse(raw) : {};
+    } else {
+      logs = {};
     }
 
     if (!logs[today]) logs[today] = [];
 
     if (logs[today].find((entry: any) => entry.name === username)) {
+      await message.react('🚫');
+
       await message.reply({
-        content: `✴️ 오늘은 이미 출석했어요!\n출석 일시: ${
+        content: `✴️ 오늘은 이미 출석했어요!\n | 출석 일시 :: ${
           logs[today].find((entry: any) => entry.name === username).time
         }`,
       });
@@ -72,14 +86,14 @@ client.on('messageCreate', async (message) => {
 
     if (currentTime.isAfter(lateTime)) {
       await message.reply({
-        content: `✨ **${username}**님 출석 완료!\n| 출석 일시: ${currentTime} (지각)\n| 이번 주 출석 횟수: ${attendanceOfWeek} / 5 회`,
+        content: `✨ **${username}**님 출석 완료!\n | 출석 일시 :: ${now} (지각)\n | 이번 주 출석 횟수 :: ${attendanceOfWeek} / 5 회`,
       });
 
       return;
     }
 
     await message.reply({
-      content: `✨ **${username}**님 출석 완료!\n| 출석 일시: ${currentTime}\n| 이번 주 출석 횟수: ${attendanceOfWeek} / 5 회`,
+      content: `✨ **${username}**님 출석 완료!\n | 출석 일시 :: ${now}\n | 이번 주 출석 횟수 :: ${attendanceOfWeek} / 5 회`,
     });
   }
 });
