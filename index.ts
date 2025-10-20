@@ -28,8 +28,12 @@ client.on('messageCreate', async (message) => {
 
   if (command === '출석') {
     const username = message.author.username;
+    const today = dayjs().format('YYYY/MM/DD');
     const now = dayjs().format('HH:mm');
-    const today = dayjs().format('YYYY-MM-DD');
+
+    const currentTime = dayjs(`${today} ${now}`, 'YYYY/MM/DD HH:mm');
+    // 지각 시간 바뀌면 조정 필요
+    const lateTime = dayjs(`${today} 10:00`, 'YYYY/MM/DD HH:mm');
 
     const startOfWeek = dayjs().startOf('week').add(1, 'day');
     const endOfWeek = dayjs().add(4, 'day');
@@ -64,8 +68,18 @@ client.on('messageCreate', async (message) => {
       .flatMap(([_, records]) => records)
       .filter((entry: any) => entry.name === username).length;
 
+    await message.react('✅');
+
+    if (currentTime.isAfter(lateTime)) {
+      await message.reply({
+        content: `✨ **${username}**님 출석 완료!\n| 출석 일시: ${currentTime} (지각)\n| 이번 주 출석 횟수: ${attendanceOfWeek} / 5 회`,
+      });
+
+      return;
+    }
+
     await message.reply({
-      content: `✅ ${username}님 출석 완료!\n출석 일시: ${today} ${now}\n이번 주 출석 횟수: ${attendanceOfWeek} / 5 회`,
+      content: `✨ **${username}**님 출석 완료!\n| 출석 일시: ${currentTime}\n| 이번 주 출석 횟수: ${attendanceOfWeek} / 5 회`,
     });
   }
 });
