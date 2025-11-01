@@ -1,27 +1,30 @@
 {
-  "name": "kirby-bot",
-  "module": "index.ts",
-  "type": "module",
-  "private": true,
-  "scripts": {
-    "dev": "bun --watch src/index.ts",
-    "start": "bunx tsc && bun dist/index.js",
-    "build": "tsc"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.39.0",
-    "@types/bun": "latest",
-    "@typescript-eslint/eslint-plugin": "^8.46.2",
-    "@typescript-eslint/parser": "^8.46.2",
-    "eslint-config-prettier": "^10.1.8",
-    "prettier": "^3.6.2",
-    "typescript": "^5.9.3"
-  },
-  "dependencies": {
-    "@trivago/prettier-plugin-sort-imports": "^5.2.2",
-    "dayjs": "^1.11.18",
-    "discord.js": "^14.23.2",
-    "dotenv": "^17.2.3",
-    "eslint": "^9.38.0"
-  }
+	"name": "kirby-bot",
+	"module": "index.ts",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"dev": "bun --watch src/index.ts",
+		"start": "bunx tsc && bun dist/index.js",
+		"build": "tsc",
+		"gen-ts": "bunx supabase gen types --lang=typescript --project-id mdezkrrhvxpwygdzutkm --schema public > src/supabase/database.types.ts"
+	},
+	"devDependencies": {
+		"@eslint/js": "^9.39.0",
+		"@types/bun": "latest",
+		"@typescript-eslint/eslint-plugin": "^8.46.2",
+		"@typescript-eslint/parser": "^8.46.2",
+		"eslint-config-prettier": "^10.1.8",
+		"prettier": "^3.6.2",
+		"typescript": "^5.9.3"
+	},
+	"dependencies": {
+		"@supabase/supabase-js": "^2.78.0",
+		"@trivago/prettier-plugin-sort-imports": "^5.2.2",
+		"dayjs": "^1.11.18",
+		"discord.js": "^14.23.2",
+		"dotenv": "^17.2.3",
+		"eslint": "^9.38.0",
+		"supabase": "^2.54.11"
+	}
 }
