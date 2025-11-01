@@ -1,4 +1,4 @@
-import { Client, Collection, Events, IntentsBitField } from 'discord.js';
+import { Client, Collection, IntentsBitField } from 'discord.js';
 import 'dotenv/config';
 import { readdirSync } from 'fs';
 import { dirname, join } from 'path';
@@ -14,18 +14,16 @@ const intents = new IntentsBitField().add(
 	IntentsBitField.Flags.MessageContent,
 	IntentsBitField.Flags.GuildVoiceStates,
 );
+const client = new Client({ intents });
 
-const client = new Client({ intents }) as Client & {
-	commands: Collection<string, any>;
-};
+// 커맨드 로드
 client.commands = new Collection();
-
 const commandsPath = join(__dirname, 'commands');
-const files = readdirSync(commandsPath).filter(
+const commandFiles = readdirSync(commandsPath).filter(
 	(f) => f.endsWith('.ts') || f.endsWith('.js'),
 );
 
-for (const file of files) {
+for (const file of commandFiles) {
 	const filePath = join(commandsPath, file);
 	const command = await import(pathToFileURL(filePath).href);
 
@@ -34,32 +32,21 @@ for (const file of files) {
 	}
 }
 
-client.once(Events.ClientReady, (readyClient) => {
-	console.log(`봇 준비 완료! ${readyClient.user.tag}`);
-});
+// 이벤트 로드
+const eventsPath = join(__dirname, 'events');
+const eventFiles = readdirSync(eventsPath).filter(
+	(f) => f.endsWith('.ts') || f.endsWith('.js'),
+);
 
-client.on(Events.InteractionCreate, async (interaction) => {
-	if (!interaction.isChatInputCommand()) return;
+for (const file of eventFiles) {
+	const filePath = join(eventsPath, file);
+	const event = await import(pathToFileURL(filePath).href);
 
-	const command = client.commands.get(interaction.commandName);
-	if (!command) {
-		console.log(`${interaction.commandName} 명령어 없음`);
-
-		return;
+	if (event.once) {
+		client.once(event.name, (...args) => event.execute(...args));
+	} else {
+		client.on(event.name, (...args) => event.execute(...args));
 	}
-
-	try {
-		await command.execute(interaction);
-	} catch (err) {
-		console.error(err);
-		const message = { content: '오류 발생', ephemeral: true };
-
-		if (interaction.replied || interaction.deferred) {
-			await interaction.followUp(message);
-		} else {
-			await interaction.reply(message);
-		}
-	}
-});
+}
 
 client.login(token);
