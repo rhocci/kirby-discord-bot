@@ -15,6 +15,7 @@ const intents = new IntentsBitField().add(
 	IntentsBitField.Flags.GuildVoiceStates,
 );
 const client = new Client({ intents });
+client.cooldowns = new Collection();
 
 // 커맨드 로드
 client.commands = new Collection();
@@ -42,14 +43,13 @@ for (const file of eventFiles) {
 	const filePath = join(eventsPath, file);
 	const event = await import(pathToFileURL(filePath).href);
 
-	if (event.once) {
-		client.once(event.name, (...args) => event.execute(...args));
+	if (event.default?.once) {
+		client.once(event.default.name, (...args) =>
+			event.default.execute(...args),
+		);
 	} else {
-		client.on(event.name, (...args) => event.execute(...args));
+		client.on(event.default.name, (...args) => event.default.execute(...args));
 	}
 }
-
-// 이벤트 쿨다운 로드
-client.cooldowns = new Collection();
 
 client.login(token);
