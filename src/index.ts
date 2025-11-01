@@ -1,7 +1,8 @@
 import { Client, Collection, Events, IntentsBitField } from 'discord.js';
+import 'dotenv/config';
 import { readdirSync } from 'fs';
 import { dirname, join } from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -19,24 +20,17 @@ const client = new Client({ intents }) as Client & {
 };
 client.commands = new Collection();
 
-const foldersPath = join(__dirname, 'commands');
-const commandFolders = readdirSync(foldersPath);
+const commandsPath = join(__dirname, 'commands');
+const files = readdirSync(commandsPath).filter(
+	(f) => f.endsWith('.ts') || f.endsWith('.js'),
+);
 
-for (const folder of commandFolders) {
-	const commandsPath = join(foldersPath, folder);
-	const commandFiles = readdirSync(commandsPath).filter((file) =>
-		file.endsWith('.ts'),
-	);
+for (const file of files) {
+	const filePath = join(commandsPath, file);
+	const command = await import(pathToFileURL(filePath).href);
 
-	for (const file of commandFiles) {
-		const filePath = join(commandsPath, file);
-		const command = await import(filePath);
-
-		if ('data' in command.default && 'execute' in command.default) {
-			client.commands.set(command.default.data.name, command.default);
-		} else {
-			console.log(`${filePath}의 커맨드에 필요한 데이터나 메서드가 없습니다.`);
-		}
+	if (command.default?.data) {
+		client.commands.set(command.default.data.name, command.default);
 	}
 }
 
@@ -48,7 +42,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
 	if (!interaction.isChatInputCommand()) return;
 
 	const command = client.commands.get(interaction.commandName);
-	if (!command) return;
+	if (!command) {
+		console.log(`${interaction.commandName} 명령어 없음`);
+
+		return;
+	}
 
 	try {
 		await command.execute(interaction);
