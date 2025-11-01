@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "bun --watch src/index.ts",
-    "start": "bunx tsc && node dist/index.js",
+    "start": "bunx tsc && bun dist/index.js",
     "build": "tsc"
   },
   "devDependencies": {
