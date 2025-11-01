@@ -1,4 +1,4 @@
-import { Events, type Interaction } from 'discord.js';
+import { Collection, Events, type Interaction } from 'discord.js';
 
 export default {
 	name: Events.InteractionCreate,
@@ -10,15 +10,39 @@ async function execute(interaction: Interaction) {
 	if (!interaction.isChatInputCommand()) return;
 
 	const command = interaction.client.commands.get(interaction.commandName);
+	const { cooldowns } = interaction.client;
+
+	if (!cooldowns.has(command.data.name)) {
+		cooldowns.set(command.data.name, new Collection());
+	}
+
+	const now = Date.now();
+	const timestamps = cooldowns.get(command.data.name);
+	const defaultCooldown = 3;
+	const cooldownAmount = (command.cooldown ?? defaultCooldown) * 1000;
+
+	if (timestamps.has(interaction.user.id)) {
+		const expirationTime = timestamps.get(interaction.user.id) + cooldownAmount;
+
+		if (now < expirationTime) {
+			const expiredTimestamp = Math.round(expirationTime / 1000);
+			return interaction.reply({
+				content: `요청이 많습니다.\n${expiredTimestamp}초 뒤에 다시 시도해주세요.`,
+				ephemeral: true,
+			});
+		}
+
+		timestamps.set(interaction.user.id, now);
+		setTimeout(() => timestamps.delete(interaction.user.id), cooldownAmount);
+	}
 
 	if (!command) {
 		console.log(`${interaction.commandName} 명령어 없음`);
-		await interaction.reply({
+		return interaction.reply({
 			content:
 				'유효하지 않은 명령어입니다.\n`/?` 를 입력해 명령어 목록을 확인하세요.',
 			ephemeral: true,
 		});
-		return;
 	}
 
 	try {

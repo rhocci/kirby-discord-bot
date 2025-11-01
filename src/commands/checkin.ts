@@ -1,6 +1,7 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 
 export default {
+	cooldown: 5,
 	data: new SlashCommandBuilder()
 		.setName('입실')
 		.setDescription('입실 체크를 하는 명령어입니다.'),

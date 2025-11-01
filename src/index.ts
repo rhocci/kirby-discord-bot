@@ -49,4 +49,7 @@ for (const file of eventFiles) {
 	}
 }
 
+// 이벤트 쿨다운 로드
+client.cooldowns = new Collection();
+
 client.login(token);
