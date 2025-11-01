@@ -7,5 +7,14 @@
   "bracketSpacing": true,
   "endOfLine": "auto",
   "printWidth": 80,
-  "rangeStart": 0
+  "rangeStart": 0,
+  "plugins": ["eslint-config-prettier", "prettier-plugin-sort-imports"],
+  "importOrder": [
+    "^discord\\.js$",
+    "^@supabase/(.*)$",
+    "<THIRD_PARTY_MODULES>",
+    "^@/(.*)$",
+    "^[./]"
+  ],
+  "importOrderSortSpecifiers": true
 }
