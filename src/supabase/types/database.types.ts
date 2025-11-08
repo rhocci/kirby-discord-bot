@@ -14,42 +14,42 @@ export type Database = {
 	};
 	public: {
 		Tables: {
-			attendance: {
+			attendance_log: {
 				Row: {
 					check_in: string | null;
+					check_meal: string | null;
 					check_out: string | null;
-					created_at: string;
+					created_at: string | null;
 					date: string;
-					id: number;
-					lunch_out: string | null;
-					member_id: string | null;
+					id: string;
+					member_id: string;
 					status: string | null;
 				};
 				Insert: {
 					check_in?: string | null;
+					check_meal?: string | null;
 					check_out?: string | null;
-					created_at: string;
+					created_at?: string | null;
 					date: string;
-					id?: number;
-					lunch_out?: string | null;
-					member_id?: string | null;
+					id?: string;
+					member_id: string;
 					status?: string | null;
 				};
 				Update: {
 					check_in?: string | null;
+					check_meal?: string | null;
 					check_out?: string | null;
-					created_at?: string;
+					created_at?: string | null;
 					date?: string;
-					id?: number;
-					lunch_out?: string | null;
-					member_id?: string | null;
+					id?: string;
+					member_id?: string;
 					status?: string | null;
 				};
 				Relationships: [
 					{
-						foreignKeyName: 'attendance_member_id_fkey';
+						foreignKeyName: 'attendance_log_member_id_fkey';
 						columns: ['member_id'];
-						isOneToOne: true;
+						isOneToOne: false;
 						referencedRelation: 'members';
 						referencedColumns: ['id'];
 					},
@@ -57,25 +57,28 @@ export type Database = {
 			};
 			members: {
 				Row: {
-					created_at: string;
+					created_at: string | null;
 					discord_id: string;
 					id: string;
+					is_active: boolean | null;
 					name: string;
-					status: string | null;
+					updated_at: string | null;
 				};
 				Insert: {
-					created_at?: string;
+					created_at?: string | null;
 					discord_id: string;
 					id?: string;
+					is_active?: boolean | null;
 					name: string;
-					status?: string | null;
+					updated_at?: string | null;
 				};
 				Update: {
-					created_at?: string;
+					created_at?: string | null;
 					discord_id?: string;
 					id?: string;
+					is_active?: boolean | null;
 					name?: string;
-					status?: string | null;
+					updated_at?: string | null;
 				};
 				Relationships: [];
 			};
