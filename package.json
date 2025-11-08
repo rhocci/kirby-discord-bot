@@ -25,6 +25,7 @@
 		"discord.js": "^14.23.2",
 		"dotenv": "^17.2.3",
 		"eslint": "^9.38.0",
+		"node-cron": "^4.2.1",
 		"supabase": "^2.54.11"
 	}
 }
