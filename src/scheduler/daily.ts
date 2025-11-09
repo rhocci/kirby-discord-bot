@@ -1,3 +1,4 @@
+import { type Client } from 'discord.js';
 import dayjs from 'dayjs';
 import supabase from '@/supabase/index.js';
 
@@ -28,3 +29,5 @@ export async function initDailyAttendance() {
 
 	return console.log(`초기 로그 생성 완료: ${date} / 총 ${members.length}명`);
 }
+
+export async function createDailyThread(client: Client) {}

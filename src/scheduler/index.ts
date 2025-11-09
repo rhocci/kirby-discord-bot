@@ -1,13 +1,21 @@
 import type { Client } from 'discord.js';
 import nodeCron from 'node-cron';
+import { createDailyThread, initDailyAttendance } from '@/scheduler/daily.js';
 
 export function initSchedulers(client: Client) {
 	/** 평일 자정 태스크
-	 * 1. 출석 로그에다 모든 멤버 기본값으로 insert(날짜만 당일로)
+	 * 1. 출석 로그에다 모든 멤버 기본값으로 insert(날짜만 당일로) v
 	 * 2. 당일 공결신청 스레드 생성/예시 템플릿 고정
 	 * 3. 전날 스레드 권한 조정(가능하면)
 	 */
-	nodeCron.schedule('0 0 * * 1-5', () => {}, { timezone: 'Asia/Seoul' });
+	nodeCron.schedule(
+		'0 0 * * 1-5',
+		() => {
+			initDailyAttendance();
+			createDailyThread(client);
+		},
+		{ timezone: 'Asia/Seoul' },
+	);
 
 	/** 평일 12시 태스크
 	 * 1. 점심식사 알림
