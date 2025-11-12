@@ -220,17 +220,29 @@ async function approveExcusion(interaction: ButtonInteraction) {
 		return console.error('신청자 ID 찾기 실패');
 	}
 
-	const { error } = await supabase
+	const { data: member, error: memberError } = await supabase
+		.from('members')
+		.select('id')
+		.eq('discord_id', applicantId)
+		.single();
+
+	if (memberError) {
+		return console.error('유효하지 않은 구성원');
+	}
+
+	const { error: updateError } = await supabase
 		.from('attendance_log')
 		.update({
 			status: 'excused',
 		})
-		.eq('discord_id', applicantId)
+		.eq('member_id', member.id)
 		.eq('date', dayjs(interaction.createdAt).format('YYYY-MM-DD'));
 
-	if (error) {
-		console.error(`출석 DB 업데이트 실패: ${error}`);
+	if (updateError) {
+		return console.error(`출석 DB 업데이트 실패: ${updateError.message}`);
 	}
+
+	console.log('출석 DB 업데이트 성공');
 }
 
 async function rejectExcusion(interaction: ButtonInteraction) {
