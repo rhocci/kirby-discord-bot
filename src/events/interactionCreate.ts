@@ -101,7 +101,7 @@ async function execute(interaction: Interaction) {
 
 			if (interaction.channel && 'send' in interaction.channel) {
 				await interaction.channel.send({
-					content: '<@&1361880083366940834> <@&1433327466834952312>',
+					content: '<@1361880083366940834> <@&1433327466834952312>',
 					embeds: [excusionEmbed],
 					components: [approvalRows],
 				});
@@ -139,9 +139,7 @@ async function applyExcusion(interaction: ButtonInteraction) {
 		.setCustomId('excusion_reason')
 		.setLabel('신청 사유')
 		.setStyle(TextInputStyle.Paragraph)
-		.setPlaceholder(
-			'사유는 관리자에게만 보여지며 따로 저장되지 않습니다. 편하게 입력해 주세요!',
-		)
+		.setPlaceholder('사유는 관리자에게만 보여지며 따로 저장되지 않습니다.')
 		.setRequired(true)
 		.setMaxLength(300);
 
