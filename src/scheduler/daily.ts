@@ -4,6 +4,7 @@ import {
 	ThreadAutoArchiveDuration,
 } from 'discord.js';
 import dayjs from 'dayjs';
+import excusionRows from '@/commands/excusion.js';
 import supabase from '@/supabase/index.js';
 
 export async function initDailyAttendance() {
@@ -52,7 +53,17 @@ export async function createDailyThread(client: Client) {
 	const thread = await message.startThread({
 		name: `🗓️ ${date} 공결신청`,
 		autoArchiveDuration: ThreadAutoArchiveDuration.OneDay,
-		reason: '신청 마감된 스레드입니다. 관리자에게 문의해 주세요.',
+		reason: '일일 공결신청 스레드 생성',
+	});
+
+	await thread.send({
+		content: `
+		** 공결신청 주의사항 **
+		1. 명확하고 납득 가능한 사유를 기입해주세요.\n사유가 부적절하다고 판단될 시 신청이 반려될 수 있습니다.
+		2. 공결은 당일 하루만 신청 가능합니다.\n신청 기한이 지났거나 미리 신청하고 싶을 경우 관리자에게 문의하세요.
+		3. 신청 메세지가 생성되면 수동 승인을 거쳐 출석에 반영됩니다.\n(체크 이모지 리액션이 달리면 승인된 것)
+		`,
+		components: [excusionRows],
 	});
 
 	console.log(`- 공결신청 스레드 생성 완료: ${thread.name}`);
