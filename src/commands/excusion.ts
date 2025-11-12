@@ -5,8 +5,21 @@ const applyButton = new ButtonBuilder()
 	.setLabel('신청하기')
 	.setStyle(ButtonStyle.Primary);
 
-const excusionRows = new ActionRowBuilder<ButtonBuilder>().addComponents(
+export const excusionRows = new ActionRowBuilder<ButtonBuilder>().addComponents(
 	applyButton,
 );
 
-export default excusionRows;
+const approveButton = new ButtonBuilder()
+	.setCustomId('excusion_approve')
+	.setLabel('승인')
+	.setStyle(ButtonStyle.Success);
+
+const rejectButton = new ButtonBuilder()
+	.setCustomId('excusion_reject')
+	.setLabel('거절')
+	.setStyle(ButtonStyle.Danger);
+
+export const approvalRows = new ActionRowBuilder<ButtonBuilder>().addComponents(
+	approveButton,
+	rejectButton,
+);

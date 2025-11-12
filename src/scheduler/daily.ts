@@ -5,7 +5,7 @@ import {
 	ThreadAutoArchiveDuration,
 } from 'discord.js';
 import dayjs from 'dayjs';
-import excusionRows from '@/commands/excusion.js';
+import { excusionRows } from '@/commands/excusion.js';
 import { colors } from '@/styles/palette.js';
 import supabase from '@/supabase/index.js';
 
