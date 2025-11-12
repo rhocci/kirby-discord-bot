@@ -1,4 +1,5 @@
 import type { Client } from 'discord.js';
+import dayjs from 'dayjs';
 import nodeCron from 'node-cron';
 import { createDailyThread, initDailyAttendance } from '@/scheduler/daily.js';
 
@@ -11,6 +12,11 @@ export function initSchedulers(client: Client) {
 	nodeCron.schedule(
 		'0 0 * * 1-5',
 		() => {
+			const today = dayjs().format('YYYY-MM-DD');
+			console.log(
+				`====================\n${today} 일간(00시)\n====================`,
+			);
+
 			initDailyAttendance();
 			createDailyThread(client);
 		},

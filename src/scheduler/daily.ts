@@ -1,4 +1,8 @@
-import { type Client } from 'discord.js';
+import {
+	ChannelType,
+	type Client,
+	ThreadAutoArchiveDuration,
+} from 'discord.js';
 import dayjs from 'dayjs';
 import supabase from '@/supabase/index.js';
 
@@ -11,7 +15,9 @@ export async function initDailyAttendance() {
 		.eq('is_active', true);
 
 	if (!members || memberError) {
-		return console.error(`멤버 조회 실패: ${memberError}`);
+		console.log(`- 출석 로그 생성 실패`);
+		console.error(`-> ${memberError.message}`);
+		return;
 	}
 
 	const dailyLog = members.map((member) => ({
@@ -24,10 +30,30 @@ export async function initDailyAttendance() {
 		.insert(dailyLog);
 
 	if (insertError) {
-		return console.error(`초기 로그 생성 실패: ${insertError}`);
+		console.log(`- 출석 로그 생성 실패`);
+		console.error(`-> ${insertError.message}`);
+		return;
 	}
 
-	return console.log(`초기 로그 생성 완료: ${date} / 총 ${members.length}명`);
+	console.log(`- 출석 로그 생성 완료: ${members.length}명`);
 }
 
-export async function createDailyThread(client: Client) {}
+export async function createDailyThread(client: Client) {
+	const excusionChannel = await client.channels
+		.fetch('1436641965499486329')
+		.catch(() => null);
+
+	if (!excusionChannel || !(excusionChannel.type === ChannelType.GuildText)) {
+		return console.error('유효하지 않은 채널');
+	}
+
+	const date = dayjs().format('YY/MM/DD');
+	const message = await excusionChannel.send(`🗓️ **${date} 공결신청**`);
+	const thread = await message.startThread({
+		name: `🗓️ ${date} 공결신청`,
+		autoArchiveDuration: ThreadAutoArchiveDuration.OneDay,
+		reason: '신청 마감된 스레드입니다. 관리자에게 문의해 주세요.',
+	});
+
+	console.log(`- 공결신청 스레드 생성 완료: ${thread.name}`);
+}

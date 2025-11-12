@@ -3,7 +3,6 @@ import 'dotenv/config';
 import { readdirSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
-import { initSchedulers } from '@/scheduler/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -54,4 +53,3 @@ for (const file of eventFiles) {
 }
 
 client.login(token);
-initSchedulers(client);
