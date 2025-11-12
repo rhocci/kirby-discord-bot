@@ -26,7 +26,17 @@ export function initSchedulers(client: Client) {
 	/** 평일 12시 태스크
 	 * 1. 점심식사 알림
 	 */
-	nodeCron.schedule('0 12 * * 1-5', () => {}, { timezone: 'Asia/Seoul' });
+	nodeCron.schedule(
+		'0 12 * * 1-5',
+		() => {
+			const today = dayjs().format('YYYY-MM-DD');
+			console.log(
+				`====================\n${today} 일간(12시)\n====================`,
+			);
+			
+		},
+		{ timezone: 'Asia/Seoul' },
+	);
 
 	/** 평일 13시 태스크
 	 * 1. 점심식사 종료 알림

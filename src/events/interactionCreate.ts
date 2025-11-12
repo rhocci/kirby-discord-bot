@@ -14,6 +14,7 @@ import {
 import dayjs from 'dayjs';
 import { approvalRows } from '@/commands/excusion.js';
 import { colors } from '@/styles/palette.js';
+import supabase from '@/supabase/index.js';
 
 export default {
 	name: Events.InteractionCreate,
@@ -206,11 +207,30 @@ async function approveExcusion(interaction: ButtonInteraction) {
 	const updatedEmbed = EmbedBuilder.from(originalEmbed)
 		.setTitle('✅ 공결신청 승인됨')
 		.setColor(colors.neon.green);
+	const applicantId = originalEmbed?.fields
+		.find((f) => f.name === '신청자')
+		?.value?.match(/\d+/)?.[0];
 
 	await interaction.update({
 		embeds: [updatedEmbed],
 		components: [],
 	});
+
+	if (!applicantId) {
+		return console.error('신청자 ID 찾기 실패');
+	}
+
+	const { error } = await supabase
+		.from('attendance_log')
+		.update({
+			status: 'excused',
+		})
+		.eq('discord_id', applicantId)
+		.eq('date', dayjs(interaction.createdAt).format('YYYY-MM-DD'));
+
+	if (error) {
+		console.error(`출석 DB 업데이트 실패: ${error}`);
+	}
 }
 
 async function rejectExcusion(interaction: ButtonInteraction) {
