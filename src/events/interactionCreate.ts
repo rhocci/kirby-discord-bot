@@ -7,6 +7,7 @@ import {
 	Events,
 	type Interaction,
 	ModalBuilder,
+	PermissionFlagsBits,
 	TextInputBuilder,
 	TextInputStyle,
 } from 'discord.js';
@@ -101,7 +102,7 @@ async function execute(interaction: Interaction) {
 
 			if (interaction.channel && 'send' in interaction.channel) {
 				await interaction.channel.send({
-					content: '<@1361880083366940834> <@&1433327466834952312>',
+					content: '<@&1438132990969647157> <@&1433327466834952312>',
 					embeds: [excusionEmbed],
 					components: [approvalRows],
 				});
@@ -131,6 +132,13 @@ async function execute(interaction: Interaction) {
 }
 
 async function applyExcusion(interaction: ButtonInteraction) {
+	if (!interaction.memberPermissions?.has(PermissionFlagsBits.ManageMessages)) {
+		return interaction.reply({
+			content: '⚠️ 관리자 권한이 필요합니다.',
+			ephemeral: true,
+		});
+	}
+
 	const modal = new ModalBuilder()
 		.setCustomId('excusion_modal')
 		.setTitle('공결 신청하기');
@@ -139,7 +147,7 @@ async function applyExcusion(interaction: ButtonInteraction) {
 		.setCustomId('excusion_reason')
 		.setLabel('신청 사유')
 		.setStyle(TextInputStyle.Paragraph)
-		.setPlaceholder('사유는 관리자에게만 보여지며 따로 저장되지 않습니다.')
+		.setPlaceholder('ex. 병원진료, 가족행사, 컨디션 난조 등')
 		.setRequired(true)
 		.setMaxLength(300);
 
@@ -152,6 +160,13 @@ async function applyExcusion(interaction: ButtonInteraction) {
 }
 
 async function approveExcusion(interaction: ButtonInteraction) {
+	if (!interaction.memberPermissions?.has(PermissionFlagsBits.ManageMessages)) {
+		return interaction.reply({
+			content: '⚠️ 관리자 권한이 필요합니다.',
+			ephemeral: true,
+		});
+	}
+
 	const originalEmbed = interaction.message.embeds[0] as Embed;
 	const updatedEmbed = EmbedBuilder.from(originalEmbed)
 		.setTitle('✅ 공결신청 승인됨')
