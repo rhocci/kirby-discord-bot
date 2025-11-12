@@ -1,7 +1,11 @@
 import type { Client } from 'discord.js';
 import dayjs from 'dayjs';
 import nodeCron from 'node-cron';
-import { createDailyThread, initDailyAttendance } from '@/scheduler/daily.js';
+import {
+	alertLunchTime,
+	createDailyThread,
+	initDailyAttendance,
+} from '@/scheduler/daily.js';
 
 export function initSchedulers(client: Client) {
 	/** 평일 자정 태스크
@@ -33,7 +37,7 @@ export function initSchedulers(client: Client) {
 			console.log(
 				`====================\n${today} 일간(12시)\n====================`,
 			);
-			
+			alertLunchTime(client, 'start');
 		},
 		{ timezone: 'Asia/Seoul' },
 	);
@@ -41,7 +45,17 @@ export function initSchedulers(client: Client) {
 	/** 평일 13시 태스크
 	 * 1. 점심식사 종료 알림
 	 */
-	nodeCron.schedule('0 13 * * 1-5', () => {}, { timezone: 'Asia/Seoul' });
+	nodeCron.schedule(
+		'0 13 * * 1-5',
+		() => {
+			const today = dayjs().format('YYYY-MM-DD');
+			console.log(
+				`====================\n${today} 일간(13시)\n====================`,
+			);
+			alertLunchTime(client, 'end');
+		},
+		{ timezone: 'Asia/Seoul' },
+	);
 
 	/** 평일 16시 30분 태스크
 	 * 1. 입실만 찍고 퇴실 안찍은사람들 태크(본인만 보이게) 퇴실 알림

@@ -51,7 +51,6 @@ export async function createDailyThread(client: Client) {
 	}
 
 	const date = dayjs().format('YY/MM/DD');
-
 	const message = await excusionChannel.send(`🗓️ **${date} 공결신청**`);
 	const thread = await message.startThread({
 		name: `🗓️ ${date} 공결신청`,
@@ -85,4 +84,28 @@ export async function createDailyThread(client: Client) {
 	});
 
 	console.log(`- 공결신청 스레드 생성 완료: ${thread.name}`);
+}
+
+export async function alertLunchTime(client: Client, status: 'start' | 'end') {
+	const defaultChannel = await client.channels
+		.fetch('1429832677531586626')
+		.catch(() => null);
+
+	if (!defaultChannel || !(defaultChannel.type === ChannelType.GuildText)) {
+		return console.error('유효하지 않은 채널');
+	}
+
+	const message =
+		status === 'start'
+			? '점심 시간입니다! 식사 맛있게 하세요~!'
+			: '점심 시간이 끝났어요!';
+	const embed = new EmbedBuilder({
+		description: message,
+	})
+		.setColor(colors.neon.blue)
+		.setTimestamp();
+
+	await defaultChannel.send({
+		embeds: [embed],
+	});
 }
