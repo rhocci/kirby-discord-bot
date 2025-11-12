@@ -1,6 +1,6 @@
 import { Client, Events } from 'discord.js';
 import dayjs from 'dayjs';
-import { createDailyThread, initDailyAttendance } from '@/scheduler/daily.js';
+import { initSchedulers } from '@/scheduler/index.js';
 
 export default {
 	name: Events.ClientReady,
@@ -13,8 +13,6 @@ export default {
 			`====================\n${today} 일간(00시)\n====================`,
 		);
 
-		initDailyAttendance();
-		createDailyThread(client);
-		// initSchedulers(client);
+		initSchedulers(client);
 	},
 };
