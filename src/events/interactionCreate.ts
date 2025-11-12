@@ -93,10 +93,7 @@ async function execute(interaction: Interaction) {
 
 			const excusionEmbed = new EmbedBuilder()
 				.setTitle('승인 대기중')
-				.addFields(
-					{ name: '신청자', value: `${interaction.user}` },
-					{ name: '사유', value: reason },
-				)
+				.addFields({ name: '신청자', value: `${interaction.user}` })
 				.setColor(colors.neon.yellow)
 				.setTimestamp();
 
@@ -107,8 +104,44 @@ async function execute(interaction: Interaction) {
 					components: [approvalRows],
 				});
 			}
+
+			try {
+				const admin = await interaction.channel?.client.users.fetch(
+					'1361880083366940834',
+				);
+				await admin?.send({
+					content: '승인 대기중인 신청이 있습니다.',
+					embeds: [
+						new EmbedBuilder().setTitle('신청 상세').addFields(
+							{
+								name: '날짜',
+								value: `${interaction.createdAt.toDateString}`,
+							},
+							{
+								name: '신청자',
+								value: `${interaction.user}`,
+							},
+							{
+								name: '사유',
+								value: `${reason}`,
+							},
+						),
+					],
+				});
+			} catch (err) {
+				console.error(`관리자 DM 전송 실패: ${err}`);
+			}
 		}
 		if (interaction.customId === 'reject_modal') {
+			if (
+				!interaction.memberPermissions?.has(PermissionFlagsBits.ManageMessages)
+			) {
+				return interaction.reply({
+					content: '⚠️ 관리자 권한이 필요합니다.',
+					ephemeral: true,
+				});
+			}
+
 			const reason = interaction.fields.getTextInputValue('reject_reason');
 
 			const originalMessage = interaction.message;
@@ -147,7 +180,7 @@ async function applyExcusion(interaction: ButtonInteraction) {
 		.setCustomId('excusion_reason')
 		.setLabel('신청 사유')
 		.setStyle(TextInputStyle.Paragraph)
-		.setPlaceholder('ex. 병원진료, 가족행사, 컨디션 난조 등')
+		.setPlaceholder('사유는 관리자에게만 보여집니다.')
 		.setRequired(true)
 		.setMaxLength(300);
 
@@ -160,13 +193,6 @@ async function applyExcusion(interaction: ButtonInteraction) {
 }
 
 async function approveExcusion(interaction: ButtonInteraction) {
-	if (!interaction.memberPermissions?.has(PermissionFlagsBits.ManageMessages)) {
-		return interaction.reply({
-			content: '⚠️ 관리자 권한이 필요합니다.',
-			ephemeral: true,
-		});
-	}
-
 	const originalEmbed = interaction.message.embeds[0] as Embed;
 	const updatedEmbed = EmbedBuilder.from(originalEmbed)
 		.setTitle('✅ 공결신청 승인됨')
