@@ -86,8 +86,7 @@ async function execute(interaction: Interaction) {
 			const reason = interaction.fields.getTextInputValue('excusion_reason');
 
 			await interaction.reply({
-				content: `공결 신청 완료.
-			관리자의 승인을 기다려 주세요.`,
+				content: `공결 신청 완료!\n관리자의 승인을 기다려 주세요.`,
 				ephemeral: true,
 			});
 
@@ -102,7 +101,7 @@ async function execute(interaction: Interaction) {
 
 			if (interaction.channel && 'send' in interaction.channel) {
 				await interaction.channel.send({
-					content: '@here <@&1433327466834952312>',
+					content: '<@&1361880083366940834> <@&1433327466834952312>',
 					embeds: [excusionEmbed],
 					components: [approvalRows],
 				});
@@ -158,7 +157,6 @@ async function approveExcusion(interaction: ButtonInteraction) {
 	const originalEmbed = interaction.message.embeds[0] as Embed;
 	const updatedEmbed = EmbedBuilder.from(originalEmbed)
 		.setTitle('✅ 공결신청 승인됨')
-		.addFields({ name: '신청자', value: `${interaction.user}` })
 		.setColor(colors.neon.green);
 
 	await interaction.update({

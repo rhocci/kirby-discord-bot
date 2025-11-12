@@ -60,7 +60,7 @@ export async function createDailyThread(client: Client) {
 	});
 
 	const embed = new EmbedBuilder()
-		.setTitle('📌 공결 신청하기')
+		.setTitle('📌 공결 신청 주의사항')
 		.setDescription('주의사항을 읽고 아래 버튼을 눌러 신청하세요.')
 		.addFields(
 			{
@@ -74,7 +74,7 @@ export async function createDailyThread(client: Client) {
 			},
 			{
 				name: '3. 신청 메세지가 생성되면 수동 승인을 거쳐 출석에 반영됩니다.',
-				value: '(체크 이모지 리액션이 달리면 승인된 것)',
+				value: '수정된 메세지에서 처리 결과를 확인할 수 있습니다.',
 			},
 		)
 		.setColor(colors.neon.pink);
