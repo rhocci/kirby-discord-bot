@@ -11,6 +11,7 @@ import {
 	TextInputBuilder,
 	TextInputStyle,
 } from 'discord.js';
+import dayjs from 'dayjs';
 import { approvalRows } from '@/commands/excusion.js';
 import { colors } from '@/styles/palette.js';
 
@@ -109,23 +110,31 @@ async function execute(interaction: Interaction) {
 				const admin = await interaction.channel?.client.users.fetch(
 					'1361880083366940834',
 				);
+				const date = dayjs().format('YYYY월 MM월 DD일');
+
 				await admin?.send({
-					content: '승인 대기중인 신청이 있습니다.',
 					embeds: [
-						new EmbedBuilder().setTitle('신청 상세').addFields(
-							{
-								name: '날짜',
-								value: `${interaction.createdAt.toDateString}`,
-							},
-							{
-								name: '신청자',
-								value: `${interaction.user}`,
-							},
-							{
-								name: '사유',
-								value: `${reason}`,
-							},
-						),
+						new EmbedBuilder()
+							.setTitle('✅ 공결 신청 알림')
+							.setDescription('승인 대기중인 신청이 있습니다.')
+							.addFields(
+								{
+									name: '날짜',
+									value: `${date}`,
+								},
+								{
+									name: '신청자',
+									value: `${interaction.user}`,
+								},
+								{
+									name: '사유',
+									value: `${reason}`,
+								},
+							)
+							.setURL(
+								`https://discord.com/channels/${interaction.guildId}/${interaction.channelId}/${interaction.message?.id}`,
+							)
+							.setColor(colors.neon.pink),
 					],
 				});
 			} catch (err) {
