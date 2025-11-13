@@ -1,11 +1,9 @@
+import type { ButtonInteraction, Embed, Interaction } from 'discord.js';
 import {
 	ActionRowBuilder,
-	ButtonInteraction,
 	Collection,
-	Embed,
 	EmbedBuilder,
 	Events,
-	type Interaction,
 	ModalBuilder,
 	PermissionFlagsBits,
 	TextInputBuilder,
