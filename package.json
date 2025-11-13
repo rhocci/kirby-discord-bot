@@ -5,7 +5,7 @@
 	"private": true,
 	"scripts": {
 		"dev": "bun --watch src/index.ts",
-		"start": "bunx tsc && bun dist/index.js",
+		"start": "bun dist/index.js",
 		"build": "tsc",
 		"gen-ts": "bunx supabase gen types --lang=typescript --project-id mdezkrrhvxpwygdzutkm --schema public > src/supabase/types/database.types.ts"
 	},
