@@ -10,7 +10,7 @@ const token = process.env.DISCORD_TOKEN!;
 const clientId = process.env.CLIENT_ID!;
 
 const commands = [];
-const commandsPath = join(__dirname, 'commands');
+const commandsPath = join(__dirname, '../commands');
 const files = readdirSync(commandsPath).filter(
 	(f) => f.endsWith('.ts') || f.endsWith('.js'),
 );
