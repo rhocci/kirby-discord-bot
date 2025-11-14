@@ -23,8 +23,15 @@ export default {
 async function execute(interaction: Interaction) {
 	if (interaction.isChatInputCommand()) {
 		const command = interaction.client.commands.get(interaction.commandName);
-		const { cooldowns } = interaction.client;
+		if (!command) {
+			console.log(`${interaction.commandName} 명령어 없음`);
+			return interaction.reply({
+				content: '유효하지 않은 명령어입니다.',
+				ephemeral: true,
+			});
+		}
 
+		const { cooldowns } = interaction.client;
 		if (!cooldowns.has(command.data.name)) {
 			cooldowns.set(command.data.name, new Collection());
 		}
@@ -48,15 +55,6 @@ async function execute(interaction: Interaction) {
 
 			timestamps.set(interaction.user.id, now);
 			setTimeout(() => timestamps.delete(interaction.user.id), cooldownAmount);
-		}
-
-		if (!command) {
-			console.log(`${interaction.commandName} 명령어 없음`);
-			return interaction.reply({
-				content:
-					'유효하지 않은 명령어입니다.\n`/?` 를 입력해 명령어 목록을 확인하세요.',
-				ephemeral: true,
-			});
 		}
 
 		try {
