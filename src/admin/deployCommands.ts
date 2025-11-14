@@ -1,28 +1,10 @@
 import { REST, Routes } from 'discord.js';
-import { readdirSync } from 'fs';
-import { dirname, join } from 'path';
-import { fileURLToPath, pathToFileURL } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import { checkinCommand, checkoutCommand } from '@/commands/attendance.js';
 
 const token = process.env.DISCORD_TOKEN!;
 const clientId = process.env.CLIENT_ID!;
 
-const commands = [];
-const commandsPath = join(__dirname, '../commands');
-const files = readdirSync(commandsPath).filter(
-	(f) => f.endsWith('.ts') || f.endsWith('.js'),
-);
-
-for (const file of files) {
-	const filePath = join(commandsPath, file);
-	const command = await import(pathToFileURL(filePath).href);
-
-	if (command.default?.data) {
-		commands.push(command.default.data.toJSON());
-	}
-}
+const commands = [checkinCommand.data.toJSON(), checkoutCommand.data.toJSON()];
 
 const rest = new REST().setToken(token);
 
