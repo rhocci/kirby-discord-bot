@@ -42,25 +42,22 @@ async function handleAttendance(
 	type: Attendance,
 ) {
 	const attendanceTime = dayjs();
-	let message: string = '';
+	let message: string = '출석 체크 실패';
 	let status: Status = 'absent';
 
 	if (type === 'check_in') {
-		if (
-			attendanceTime.isAfter(TIME.available) &&
-			attendanceTime.isSame(TIME.day_start)
-		) {
+		if (attendanceTime >= TIME.available && attendanceTime <= TIME.day_start) {
 			message = '입실 완료!';
 			status = 'present';
 		} else if (
-			attendanceTime.isAfter(TIME.day_start) &&
-			attendanceTime.isSame(TIME.day_lunch)
+			attendanceTime > TIME.day_start &&
+			attendanceTime <= TIME.day_lunch
 		) {
 			message = '입실 완료!(12시 전 지각)';
 			status = 'late_before_12';
 		} else if (
-			attendanceTime.isAfter(TIME.day_lunch) &&
-			attendanceTime.isSame(TIME.day_end)
+			attendanceTime > TIME.day_lunch &&
+			attendanceTime < TIME.day_end
 		) {
 			message = '입실 완료!(12시 이후 지각)';
 			status = 'late_after_12';
