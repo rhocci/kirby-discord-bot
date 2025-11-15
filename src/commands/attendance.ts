@@ -17,7 +17,7 @@ const IMAGE = {
 	so: createImgPath('so.png'),
 };
 
-const checkinCommand = {
+export const checkinCommand = {
 	cooldown: 5,
 	data: new SlashCommandBuilder()
 		.setName('check_in')
@@ -26,7 +26,7 @@ const checkinCommand = {
 	execute: (i: ChatInputCommandInteraction) => handleAttendance(i),
 };
 
-const checkoutCommand = {
+export const checkoutCommand = {
 	cooldown: 5,
 	data: new SlashCommandBuilder()
 		.setName('check_out')
@@ -168,8 +168,3 @@ async function handleAttendance(interaction: ChatInputCommandInteraction) {
 		],
 	});
 }
-
-export default {
-	checkinCommand,
-	checkoutCommand,
-};

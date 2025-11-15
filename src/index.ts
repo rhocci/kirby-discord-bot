@@ -21,7 +21,12 @@ const client = new Client({ intents });
 client.cooldowns = new Collection();
 client.commands = new Collection();
 
-for (const cmd of Object.values(attendanceCommands.default)) {
+const loaded = [
+	attendanceCommands.checkinCommand,
+	attendanceCommands.checkoutCommand,
+].filter(Boolean);
+
+for (const cmd of loaded) {
 	client.commands.set(cmd.data.name, cmd);
 	console.log(`명령어 로드: ${cmd.data.name}`);
 }
