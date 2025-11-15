@@ -4,14 +4,8 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import dayjs from 'dayjs';
+import { createDailyTimeSlots } from '@/scheduler/daily.js';
 import { colors } from '@/styles/palette.js';
-
-const TIME = {
-	available: dayjs().hour(8).minute(0).second(0).millisecond(0),
-	day_start: dayjs().hour(10).minute(0).second(0).millisecond(0),
-	day_lunch: dayjs().hour(12).minute(0).second(0).millisecond(0),
-	day_end: dayjs().hour(16).minute(0).second(0).millisecond(0),
-};
 
 const checkinCommand = {
 	cooldown: 5,
@@ -34,14 +28,17 @@ const checkoutCommand = {
 async function handleAttendance(interaction: ChatInputCommandInteraction) {
 	if (interaction.channelId !== '1430825863926251560') return;
 
+	const TIME = createDailyTimeSlots();
 	const attendance: {
 		time: any;
 		isChecked: boolean;
+		thumbnail: string;
 		message?: string;
 		status?: 'absent' | 'present' | 'late_before_12' | 'late_after_12';
 	} = {
 		time: dayjs(interaction.createdTimestamp),
 		isChecked: false,
+		thumbnail: '../assets/images/so.png',
 	};
 
 	if (interaction.commandName === 'check_in') {
@@ -50,6 +47,7 @@ async function handleAttendance(interaction: ChatInputCommandInteraction) {
 			attendance.time <= TIME.day_start
 		) {
 			attendance.isChecked = true;
+			attendance.thumbnail = '../assets/images/hi.png';
 			attendance.message = '입실 체크 완료!\n스터디룸에 입장해 주세요.';
 			attendance.status = 'present';
 		} else if (
@@ -57,6 +55,7 @@ async function handleAttendance(interaction: ChatInputCommandInteraction) {
 			attendance.time <= TIME.day_lunch
 		) {
 			attendance.isChecked = true;
+			attendance.thumbnail = '../assets/images/cry.png';
 			attendance.message =
 				'입실 체크 완료!\n스터디룸에 입장해 주세요. (12시 전 지각)';
 			attendance.status = 'late_before_12';
@@ -65,11 +64,25 @@ async function handleAttendance(interaction: ChatInputCommandInteraction) {
 			attendance.time < TIME.day_end
 		) {
 			attendance.isChecked = true;
+			attendance.thumbnail = '../assets/images/cry.png';
 			attendance.message =
 				'입실 체크 완료!\n스터디룸에 입장해 주세요. (12시 이후 지각)';
 			attendance.status = 'late_after_12';
 		} else {
-			attendance.message = '입실 체크 시간이 아닙니다.\n(AM 08:00 ~ PM 17:59)';
+			attendance.message =
+				'입실 체크 시간이 아닙니다.\n(입실 가능 시간: 08:00 - 15:59)';
+		}
+	}
+
+	if (interaction.commandName === 'check_out') {
+		if (attendance.time >= TIME.day_end || attendance.time < TIME.available) {
+			attendance.isChecked = true;
+			attendance.thumbnail = '../assets/images/good.png';
+			attendance.message = '퇴실 체크 완료!\n오늘도 수고 많으셨습니다.';
+			attendance.status = 'present';
+		} else {
+			attendance.message =
+				'퇴실 체크 시간이 아닙니다.\n(퇴실 가능 시간: 16:00 - 07:59)';
 		}
 	}
 
@@ -104,6 +117,7 @@ async function handleAttendance(interaction: ChatInputCommandInteraction) {
 			name: interaction.user.displayName,
 			iconURL: interaction.user.displayAvatarURL(),
 		})
+		.setThumbnail(attendance.thumbnail)
 		.setDescription(attendance.message ?? '출석 체크 오류')
 		.setTimestamp();
 
