@@ -4,6 +4,7 @@ import { readdirSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { startHealthServer } from '@/api/healthCheck.js';
+import * as attendanceCommands from '@/commands/attendance.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -16,22 +17,13 @@ const intents = new IntentsBitField().add(
 	IntentsBitField.Flags.GuildVoiceStates,
 );
 const client = new Client({ intents });
+
 client.cooldowns = new Collection();
-
-// 커맨드 로드
 client.commands = new Collection();
-const commandsPath = join(__dirname, 'commands');
-const commandFiles = readdirSync(commandsPath).filter(
-	(f) => f.endsWith('.ts') || f.endsWith('.js'),
-);
 
-for (const file of commandFiles) {
-	const filePath = join(commandsPath, file);
-	const command = await import(pathToFileURL(filePath).href);
-
-	if (command.default?.data) {
-		client.commands.set(command.default.data.name, command.default);
-	}
+for (const cmd of Object.values(attendanceCommands.default)) {
+	client.commands.set(cmd.data.name, cmd);
+	console.log(`명령어 로드: ${cmd.data.name}`);
 }
 
 // 이벤트 로드

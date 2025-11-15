@@ -4,13 +4,14 @@ import {
 	Collection,
 	EmbedBuilder,
 	Events,
+	MessageFlags,
 	ModalBuilder,
 	PermissionFlagsBits,
 	TextInputBuilder,
 	TextInputStyle,
 } from 'discord.js';
 import dayjs from 'dayjs';
-import { approvalRows } from '@/commands/excusion.js';
+import { approvalRows } from '@/components/excusion.js';
 import { colors } from '@/styles/palette.js';
 import supabase from '@/supabase/index.js';
 
@@ -20,14 +21,17 @@ export default {
 	execute,
 };
 
+const DEFAULT_COOLDOWN = 3;
+
 async function execute(interaction: Interaction) {
 	if (interaction.isChatInputCommand()) {
 		const command = interaction.client.commands.get(interaction.commandName);
+
 		if (!command) {
 			console.log(`${interaction.commandName} 명령어 없음`);
 			return interaction.reply({
 				content: '유효하지 않은 명령어입니다.',
-				ephemeral: true,
+				flags: MessageFlags.Ephemeral,
 			});
 		}
 
@@ -36,39 +40,28 @@ async function execute(interaction: Interaction) {
 			cooldowns.set(command.data.name, new Collection());
 		}
 
-		const now = Date.now();
+		const inputTime = interaction.createdTimestamp;
 		const timestamps = cooldowns.get(command.data.name);
-		const defaultCooldown = 3;
-		const cooldownAmount = (command.cooldown ?? defaultCooldown) * 1000;
+		const cooldownAmount = (command.cooldown ?? DEFAULT_COOLDOWN) * 1000;
 
 		if (timestamps.has(interaction.user.id)) {
 			const expirationTime =
 				timestamps.get(interaction.user.id) + cooldownAmount;
 
-			if (now < expirationTime) {
+			if (inputTime < expirationTime) {
 				const expiredTimestamp = Math.round(expirationTime / 1000);
-				return interaction.reply({
+				await interaction.reply({
 					content: `요청이 많습니다.\n${expiredTimestamp}초 뒤에 다시 시도해주세요.`,
-					ephemeral: true,
+					flags: MessageFlags.Ephemeral,
 				});
+				return;
 			}
 
-			timestamps.set(interaction.user.id, now);
+			timestamps.set(interaction.user.id, inputTime);
 			setTimeout(() => timestamps.delete(interaction.user.id), cooldownAmount);
 		}
 
-		try {
-			await command.execute(interaction);
-		} catch (err) {
-			console.error(err);
-			const message = { content: '오류 발생', ephemeral: true };
-
-			if (interaction.replied || interaction.deferred) {
-				await interaction.followUp(message);
-			} else {
-				await interaction.reply(message);
-			}
-		}
+		await command.execute(interaction);
 	}
 
 	if (interaction.isButton()) {
@@ -86,7 +79,7 @@ async function execute(interaction: Interaction) {
 
 			await interaction.reply({
 				content: `공결 신청 완료!\n관리자의 승인을 기다려 주세요.`,
-				ephemeral: true,
+				flags: MessageFlags.Ephemeral,
 			});
 
 			const excusionEmbed = new EmbedBuilder()
@@ -144,7 +137,7 @@ async function execute(interaction: Interaction) {
 			) {
 				return interaction.reply({
 					content: '⚠️ 관리자 권한이 필요합니다.',
-					ephemeral: true,
+					flags: MessageFlags.Ephemeral,
 				});
 			}
 
@@ -159,7 +152,7 @@ async function execute(interaction: Interaction) {
 
 			await interaction.reply({
 				content: '반려 처리 완료',
-				ephemeral: true,
+				flags: MessageFlags.Ephemeral,
 			});
 
 			await originalMessage?.edit({
@@ -174,7 +167,7 @@ async function applyExcusion(interaction: ButtonInteraction) {
 	if (!interaction.memberPermissions?.has(PermissionFlagsBits.ManageMessages)) {
 		return interaction.reply({
 			content: '⚠️ 관리자 권한이 필요합니다.',
-			ephemeral: true,
+			flags: MessageFlags.Ephemeral,
 		});
 	}
 

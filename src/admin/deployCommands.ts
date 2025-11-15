@@ -1,10 +1,12 @@
 import { REST, Routes } from 'discord.js';
-import { checkinCommand, checkoutCommand } from '@/commands/attendance.js';
+import * as attendanceCommands from '@/commands/attendance.js';
 
 const token = process.env.DISCORD_TOKEN!;
 const clientId = process.env.CLIENT_ID!;
 
-const commands = [checkinCommand.data.toJSON(), checkoutCommand.data.toJSON()];
+const commands = Object.values(attendanceCommands.default).map((cmd) =>
+	cmd.data.toJSON(),
+);
 
 const rest = new REST().setToken(token);
 
