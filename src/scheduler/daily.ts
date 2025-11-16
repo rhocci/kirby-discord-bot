@@ -15,8 +15,9 @@ export function createDailyTimeSlots() {
 	const day_start = today.hour(10).minute(1);
 	const day_lunch = today.hour(12);
 	const day_end = today.hour(16);
+	const day_end_limit = today.hour(23).minute(59).second(59).millisecond(999);
 
-	return { available, day_start, day_lunch, day_end };
+	return { available, day_start, day_lunch, day_end, day_end_limit };
 }
 
 export async function initDailyAttendance() {

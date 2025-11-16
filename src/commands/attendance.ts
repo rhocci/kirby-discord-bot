@@ -118,7 +118,7 @@ async function handleAttendance(interaction: ChatInputCommandInteraction) {
 			attendance.message = '퇴실 체크 실패!\n(입실하지 않은 날짜)';
 		} else if (
 			attendance.time >= TIME.day_end ||
-			attendance.time <= dayjs().hour(11).minute(59).second(59).millisecond(99)
+			attendance.time <= TIME.day_end_limit
 		) {
 			attendance.isChecked = true;
 			attendance.thumbnail = IMAGE.good;
