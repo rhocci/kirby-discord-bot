@@ -51,7 +51,7 @@ async function handleAttendance(interaction: ChatInputCommandInteraction) {
 			| 'late_after_12'
 			| 'excused';
 	} = {
-		time: dayjs(interaction.createdTimestamp),
+		time: dayjs(interaction.createdTimestamp).tz('Asia/Seoul'),
 		isChecked: false,
 		thumbnail: IMAGE.so,
 	};

@@ -100,7 +100,7 @@ async function execute(interaction: Interaction) {
 				const admin = await interaction.channel?.client.users.fetch(
 					'1361880083366940834',
 				);
-				const date = dayjs().format('YYYY월 MM월 DD일');
+				const date = dayjs().tz('Asia/Seoul').format('YYYY월 MM월 DD일');
 
 				await admin?.send({
 					embeds: [
@@ -225,7 +225,10 @@ async function approveExcusion(interaction: ButtonInteraction) {
 			status: 'excused',
 		})
 		.eq('member_id', member.id)
-		.eq('date', dayjs(interaction.createdAt).format('YYYY-MM-DD'));
+		.eq(
+			'date',
+			dayjs(interaction.createdAt).tz('Asia/Seoul').format('YYYY-MM-DD'),
+		);
 
 	if (updateError) {
 		return console.error(`출석 DB 업데이트 실패: ${updateError.message}`);

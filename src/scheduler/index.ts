@@ -16,7 +16,7 @@ export function initSchedulers(client: Client) {
 	nodeCron.schedule(
 		'0 0 * * 1-5',
 		() => {
-			const today = dayjs().format('YYYY-MM-DD');
+			const today = dayjs().tz('Asia/Seoul').format('YYYY-MM-DD');
 			console.log(
 				`====================\n${today} 일간(00시)\n====================`,
 			);
@@ -33,7 +33,7 @@ export function initSchedulers(client: Client) {
 	nodeCron.schedule(
 		'0 12 * * 1-5',
 		() => {
-			const today = dayjs().format('YYYY-MM-DD');
+			const today = dayjs().tz('Asia/Seoul').format('YYYY-MM-DD');
 			console.log(
 				`====================\n${today} 일간(12시)\n====================`,
 			);
@@ -48,7 +48,7 @@ export function initSchedulers(client: Client) {
 	nodeCron.schedule(
 		'0 13 * * 1-5',
 		() => {
-			const today = dayjs().format('YYYY-MM-DD');
+			const today = dayjs().tz('Asia/Seoul').format('YYYY-MM-DD');
 			console.log(
 				`====================\n${today} 일간(13시)\n====================`,
 			);

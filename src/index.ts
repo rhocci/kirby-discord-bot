@@ -13,8 +13,6 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.tz.setDefault('Asia/Seoul');
 
-console.log('Dayjs 타임존 업데이트:', dayjs().format('YYYY-MM-DD HH:mm:ss Z'));
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
