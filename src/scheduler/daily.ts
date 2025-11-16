@@ -12,7 +12,7 @@ import supabase from '@/supabase/index.js';
 export function createDailyTimeSlots() {
 	const today = dayjs().minute(0).second(0).millisecond(0);
 	const available = today.hour(8);
-	const day_start = today.hour(10);
+	const day_start = today.hour(10).minute(1);
 	const day_lunch = today.hour(12);
 	const day_end = today.hour(16);
 

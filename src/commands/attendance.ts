@@ -81,14 +81,14 @@ async function handleAttendance(interaction: ChatInputCommandInteraction) {
 			attendance.message = '입실 체크 실패!\n(이미 입실한 날짜)';
 		} else if (
 			attendance.time >= TIME.available &&
-			attendance.time <= TIME.day_start
+			attendance.time < TIME.day_start
 		) {
 			attendance.isChecked = true;
 			attendance.thumbnail = IMAGE.hi;
 			attendance.message = '입실 체크 완료!\n스터디룸에 입장해 주세요.';
 			attendance.status = 'present';
 		} else if (
-			attendance.time > TIME.day_start &&
+			attendance.time >= TIME.day_start &&
 			attendance.time <= TIME.day_lunch
 		) {
 			attendance.isChecked = true;
@@ -114,18 +114,18 @@ async function handleAttendance(interaction: ChatInputCommandInteraction) {
 	if (interaction.commandName === 'check_out') {
 		if (attendanceLog?.status === 'excused') {
 			attendance.message = '퇴실 체크 실패!\n(공결 처리된 날짜)';
-		} else if (attendanceLog?.status !== 'present') {
-			attendance.message = '퇴실 체크 실패!\n(이미 퇴실한 날짜)';
+		} else if (attendanceLog?.status === 'absent') {
+			attendance.message = '퇴실 체크 실패!\n(입실하지 않은 날짜)';
 		} else if (
 			attendance.time >= TIME.day_end ||
-			attendance.time < TIME.available
+			attendance.time <= dayjs().hour(11).minute(59).second(59).millisecond(99)
 		) {
 			attendance.isChecked = true;
 			attendance.thumbnail = IMAGE.good;
-			attendance.message = '퇴실 체크 완료!\n오늘도 수고 많으셨습니다.';
+			attendance.message = '퇴실 체크 완료!\n학습 기록을 작성해 주세요.';
 		} else {
 			attendance.message =
-				'퇴실 체크 시간이 아닙니다.\n(퇴실 가능 시간: 16:00 - 07:59)';
+				'퇴실 체크 시간이 아닙니다.\n(퇴실 가능 시간: 16:00 - 23:59)';
 		}
 	}
 
