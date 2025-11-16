@@ -1,10 +1,17 @@
 import { Client, Collection, IntentsBitField } from 'discord.js';
+import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone.js';
+import utc from 'dayjs/plugin/utc.js';
 import 'dotenv/config';
 import { readdirSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { startHealthServer } from '@/api/healthCheck.js';
 import * as attendanceCommands from '@/commands/attendance.js';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.tz.setDefault('Asia/Seoul');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

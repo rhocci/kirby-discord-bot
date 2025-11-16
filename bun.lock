@@ -1,24 +1,23 @@
 {
   "lockfileVersion": 1,
-  "configVersion": 1,
   "workspaces": {
     "": {
       "name": "kirby-bot",
       "dependencies": {
-        "@supabase/supabase-js": "^2.78.0",
+        "@supabase/supabase-js": "^2.81.1",
         "@trivago/prettier-plugin-sort-imports": "^5.2.2",
-        "dayjs": "^1.11.18",
-        "discord.js": "^14.23.2",
+        "dayjs": "^1.11.19",
+        "discord.js": "^14.24.2",
         "dotenv": "^17.2.3",
-        "eslint": "^9.38.0",
+        "eslint": "^9.39.1",
         "node-cron": "^4.2.1",
-        "supabase": "^2.54.11",
+        "supabase": "^2.58.5",
       },
       "devDependencies": {
-        "@eslint/js": "^9.39.0",
+        "@eslint/js": "^9.39.1",
         "@types/bun": "latest",
-        "@typescript-eslint/eslint-plugin": "^8.46.2",
-        "@typescript-eslint/parser": "^8.46.2",
+        "@typescript-eslint/eslint-plugin": "^8.46.4",
+        "@typescript-eslint/parser": "^8.46.4",
         "eslint-config-prettier": "^10.1.8",
         "prettier": "^3.6.2",
         "typescript": "^5.9.3",
