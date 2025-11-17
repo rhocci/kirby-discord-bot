@@ -17,6 +17,7 @@ export function initSchedulers(client: Client) {
 		'0 0 * * 1-5',
 		() => {
 			const today = dayjs().tz('Asia/Seoul').format('YYYY-MM-DD');
+
 			console.log(
 				`====================\n${today} 일간(00시)\n====================`,
 			);
@@ -34,6 +35,7 @@ export function initSchedulers(client: Client) {
 		'0 12 * * 1-5',
 		() => {
 			const today = dayjs().tz('Asia/Seoul').format('YYYY-MM-DD');
+
 			console.log(
 				`====================\n${today} 일간(12시)\n====================`,
 			);
@@ -49,6 +51,7 @@ export function initSchedulers(client: Client) {
 		'0 13 * * 1-5',
 		() => {
 			const today = dayjs().tz('Asia/Seoul').format('YYYY-MM-DD');
+
 			console.log(
 				`====================\n${today} 일간(13시)\n====================`,
 			);
@@ -57,13 +60,18 @@ export function initSchedulers(client: Client) {
 		{ timezone: 'Asia/Seoul' },
 	);
 
-	/** 평일 16시 30분 태스크
-	 * 1. 입실만 찍고 퇴실 안찍은사람들 태크(본인만 보이게) 퇴실 알림
-	 */
-	nodeCron.schedule('30 16 * * 1-5', () => {}, { timezone: 'Asia/Seoul' });
-
 	/** 주간(토요일) 자정 태스크
 	 * 1. 금주 출석현황/지각비 정산 통계 업로드
 	 */
-	nodeCron.schedule('0 0 * * 6', () => {}, { timezone: 'Asia/Seoul' });
+	nodeCron.schedule(
+		'0 0 * * 6',
+		() => {
+			const today = dayjs().tz('Asia/Seoul').format('YYYY-MM-DD');
+
+			console.log(
+				`====================\n${today} 주간(00시)\n====================`,
+			);
+		},
+		{ timezone: 'Asia/Seoul' },
+	);
 }

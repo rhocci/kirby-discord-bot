@@ -5,9 +5,16 @@ import {
 	ThreadAutoArchiveDuration,
 } from 'discord.js';
 import dayjs from 'dayjs';
+import path from 'path';
 import { excusionRows } from '@/components/excusion.js';
 import { colors } from '@/styles/palette.js';
 import supabase from '@/supabase/index.js';
+import { createImgPath } from '@/utils/createImgPath.js';
+
+const IMAGE = {
+	lunch_start: createImgPath('lunch_start.jpg'),
+	lunch_end: createImgPath('lunch_end.jpg'),
+};
 
 export function createDailyTimeSlots() {
 	const today = dayjs().tz('Asia/Seoul').minute(0).second(0).millisecond(0);
@@ -110,13 +117,22 @@ export async function alertLunchTime(client: Client, status: 'start' | 'end') {
 		status === 'start'
 			? '점심 시간입니다! 식사 맛있게 하세요~!'
 			: '점심 시간이 끝났어요!';
-	const embed = new EmbedBuilder({
-		description: message,
-	})
+	const image = IMAGE[`lunch_${status}`];
+
+	const embed = new EmbedBuilder()
 		.setColor(colors.neon.blue)
+		.setDescription(message)
+		.setImage(image.url)
 		.setTimestamp();
 
-	await defaultChannel.send({
-		embeds: [embed],
-	});
+	try {
+		await defaultChannel.send({
+			embeds: [embed],
+			files: [{ attachment: image.attach, name: path.basename(image.attach) }],
+		});
+
+		console.log(`점심 알림 생성 완료: ${status}`);
+	} catch (err) {
+		console.error(`점심 알림 생성 실패: ${err}`);
+	}
 }
