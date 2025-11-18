@@ -115,50 +115,42 @@ async function execute(interaction: Interaction) {
 			}
 
 			try {
-				const admin = await interaction.channel?.client.users.fetch(
-					'1361880083366940834',
+				const admins = await Promise.all(
+					['1361880083366940834', '684065334130376723'].map((id) =>
+						interaction.client.users.fetch(id),
+					),
 				);
 				const date = dayjs().tz('Asia/Seoul').format('YYYY월 MM월 DD일');
 
-				await admin?.send({
-					embeds: [
-						new EmbedBuilder()
-							.setTitle('✅ 공결 신청 알림')
-							.setDescription('승인 대기중인 신청이 있습니다.')
-							.addFields(
-								{
-									name: '날짜',
-									value: `${date}`,
-								},
-								{
-									name: '신청자',
-									value: `${interaction.user}`,
-								},
-								{
-									name: '사유',
-									value: `${reason}`,
-								},
-							)
-							.setURL(
-								`https://discord.com/channels/${interaction.guildId}/${interaction.channelId}/${interaction.message?.id}`,
-							)
-							.setColor(colors.neon.pink),
-					],
-				});
+				await Promise.all(
+					admins.map((admin) =>
+						admin
+							.send({
+								embeds: [
+									new EmbedBuilder()
+										.setTitle('✅ 공결 신청 알림')
+										.setDescription('승인 대기중인 신청이 있습니다.')
+										.addFields(
+											{ name: '날짜', value: date },
+											{ name: '신청자', value: `${interaction.user}` },
+											{ name: '사유', value: reason },
+										)
+										.setURL(
+											`https://discord.com/channels/${interaction.guildId}/${interaction.channelId}/${interaction.message?.id}`,
+										)
+										.setColor(colors.neon.pink),
+								],
+							})
+							.catch((err) => {
+								console.error(`관리자 DM 전송 실패: ${err.message}`);
+							}),
+					),
+				);
 			} catch (err) {
 				console.error(`관리자 DM 전송 실패: ${err}`);
 			}
 		}
 		if (interaction.customId === 'reject_modal') {
-			if (
-				!interaction.memberPermissions?.has(PermissionFlagsBits.ManageMessages)
-			) {
-				return interaction.reply({
-					content: '⚠️ 관리자 권한이 필요합니다.',
-					flags: MessageFlags.Ephemeral,
-				});
-			}
-
 			const reason = interaction.fields.getTextInputValue('reject_reason');
 
 			const originalMessage = interaction.message;
