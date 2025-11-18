@@ -67,10 +67,28 @@ async function execute(interaction: Interaction) {
 	if (interaction.isButton()) {
 		if (interaction.customId === 'excusion_apply')
 			return applyExcusion(interaction);
-		if (interaction.customId === 'excusion_approve')
+		if (interaction.customId === 'excusion_approve') {
+			if (
+				!interaction.memberPermissions?.has(PermissionFlagsBits.ManageMessages)
+			) {
+				return interaction.reply({
+					content: '⚠️ 관리자 권한이 필요합니다.',
+					flags: MessageFlags.Ephemeral,
+				});
+			}
 			return approveExcusion(interaction);
-		if (interaction.customId === 'excusion_reject')
+		}
+		if (interaction.customId === 'excusion_reject') {
+			if (
+				!interaction.memberPermissions?.has(PermissionFlagsBits.ManageMessages)
+			) {
+				return interaction.reply({
+					content: '⚠️ 관리자 권한이 필요합니다.',
+					flags: MessageFlags.Ephemeral,
+				});
+			}
 			return rejectExcusion(interaction);
+		}
 	}
 
 	if (interaction.isModalSubmit()) {
@@ -164,13 +182,6 @@ async function execute(interaction: Interaction) {
 }
 
 async function applyExcusion(interaction: ButtonInteraction) {
-	if (!interaction.memberPermissions?.has(PermissionFlagsBits.ManageMessages)) {
-		return interaction.reply({
-			content: '⚠️ 관리자 권한이 필요합니다.',
-			flags: MessageFlags.Ephemeral,
-		});
-	}
-
 	const modal = new ModalBuilder()
 		.setCustomId('excusion_modal')
 		.setTitle('공결 신청하기');
