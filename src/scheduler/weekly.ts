@@ -1,12 +1,6 @@
 import { Dayjs } from 'dayjs';
 import supabase from '@/supabase/index.js';
 
-const PANALTY_COST = {
-	late_before_12: 1_000,
-	late_after_12: 5_000,
-	absent: 10_000,
-};
-
 type WeeklyMemberLog = {
 	id: string;
 	name: string;
@@ -69,9 +63,4 @@ export async function getWeeklyLog(
 	});
 
 	return Array.from(memberLog.values());
-}
-
-export async function createWeeklyStats(today: Dayjs) {
-	const weeklyLog = await getWeeklyLog(today);
-	console.log(weeklyLog);
 }
