@@ -6,6 +6,7 @@ import {
 	createDailyThread,
 	initDailyAttendance,
 } from '@/scheduler/daily.js';
+import { createWeeklyStats } from '@/scheduler/weekly.js';
 
 export function initSchedulers(client: Client) {
 	/** 평일 자정 태스크
@@ -71,6 +72,7 @@ export function initSchedulers(client: Client) {
 			console.log(
 				`====================\n${today.format('YYYY-MM-DD')} 주간(00시)\n====================`,
 			);
+			createWeeklyStats(client);
 		},
 		{ timezone: 'Asia/Seoul' },
 	);
