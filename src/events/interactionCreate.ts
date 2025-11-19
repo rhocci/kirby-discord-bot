@@ -237,7 +237,7 @@ async function approveExcusion(interaction: ButtonInteraction) {
 		return console.error(`출석 DB 업데이트 실패: ${updateError.message}`);
 	}
 
-	console.log('출석 DB 업데이트 성공');
+	console.log(`출석 DB 업데이트: ${interaction.user.username} 공결`);
 }
 
 async function rejectExcusion(interaction: ButtonInteraction) {

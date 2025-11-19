@@ -66,10 +66,10 @@ export function initSchedulers(client: Client) {
 	nodeCron.schedule(
 		'0 0 * * 6',
 		() => {
-			const today = dayjs().tz('Asia/Seoul').format('YYYY-MM-DD');
+			const today = dayjs().tz('Asia/Seoul');
 
 			console.log(
-				`====================\n${today} 주간(00시)\n====================`,
+				`====================\n${today.format('YYYY-MM-DD')} 주간(00시)\n====================`,
 			);
 		},
 		{ timezone: 'Asia/Seoul' },

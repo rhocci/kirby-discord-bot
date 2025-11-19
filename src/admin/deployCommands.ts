@@ -1,10 +1,15 @@
 import { REST, Routes } from 'discord.js';
 import { checkinCommand, checkoutCommand } from '@/commands/attendance.js';
+import { statsCommand } from '@/commands/statistics.js';
 
 const token = process.env.DISCORD_TOKEN!;
 const clientId = process.env.CLIENT_ID!;
 
-const commands = [checkinCommand.data.toJSON(), checkoutCommand.data.toJSON()];
+const commands = [
+	checkinCommand.data.toJSON(),
+	checkoutCommand.data.toJSON(),
+	statsCommand.data.toJSON(),
+];
 
 const rest = new REST().setToken(token);
 

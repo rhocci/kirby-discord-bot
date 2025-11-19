@@ -8,6 +8,7 @@ import { dirname, join } from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { startHealthServer } from '@/api/healthCheck.js';
 import * as attendanceCommands from '@/commands/attendance.js';
+import { statsCommand } from '@/commands/statistics.js';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -31,6 +32,7 @@ client.commands = new Collection();
 const loaded = [
 	attendanceCommands.checkinCommand,
 	attendanceCommands.checkoutCommand,
+	statsCommand,
 ].filter(Boolean);
 
 for (const cmd of loaded) {
