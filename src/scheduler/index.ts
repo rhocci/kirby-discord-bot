@@ -15,7 +15,7 @@ export function initSchedulers(client: Client) {
 	 * 3. 전날 스레드 권한 조정(가능하면)
 	 */
 	nodeCron.schedule(
-		'0 0 * * 1-5',
+		'0 15 * * 0-4',
 		() => {
 			const today = dayjs().tz('Asia/Seoul').format('YYYY-MM-DD');
 
@@ -26,14 +26,13 @@ export function initSchedulers(client: Client) {
 			initDailyAttendance();
 			createDailyThread(client);
 		},
-		{ timezone: 'Asia/Seoul' },
 	);
 
 	/** 평일 12시 태스크
 	 * 1. 점심식사 알림
 	 */
 	nodeCron.schedule(
-		'0 12 * * 1-5',
+		'0 3 * * 1-5',
 		() => {
 			const today = dayjs().tz('Asia/Seoul').format('YYYY-MM-DD');
 
@@ -42,14 +41,13 @@ export function initSchedulers(client: Client) {
 			);
 			alertLunchTime(client, 'start');
 		},
-		{ timezone: 'Asia/Seoul' },
 	);
 
 	/** 평일 13시 태스크
 	 * 1. 점심식사 종료 알림
 	 */
 	nodeCron.schedule(
-		'0 13 * * 1-5',
+		'0 4 * * 1-5',
 		() => {
 			const today = dayjs().tz('Asia/Seoul').format('YYYY-MM-DD');
 
@@ -58,14 +56,13 @@ export function initSchedulers(client: Client) {
 			);
 			alertLunchTime(client, 'end');
 		},
-		{ timezone: 'Asia/Seoul' },
 	);
 
-	/** 주간(토요일) 자정 태스크
+	/** 주간(토요일) 12시 태스크
 	 * 1. 금주 출석현황/지각비 정산 통계 업로드
 	 */
 	nodeCron.schedule(
-		'0 0 * * 6',
+		'0 3 * * 6',
 		() => {
 			const today = dayjs().tz('Asia/Seoul');
 
@@ -74,6 +71,5 @@ export function initSchedulers(client: Client) {
 			);
 			createWeeklyStats(client);
 		},
-		{ timezone: 'Asia/Seoul' },
 	);
 }
