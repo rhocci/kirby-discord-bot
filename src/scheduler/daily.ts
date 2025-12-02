@@ -5,11 +5,16 @@ import {
 	ThreadAutoArchiveDuration,
 } from 'discord.js';
 import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone.js';
+import utc from 'dayjs/plugin/utc.js';
 import path from 'path';
 import { excusionRows } from '@/components/excusion.js';
 import { colors } from '@/styles/palette.js';
 import supabase from '@/supabase/index.js';
 import { createImgPath } from '@/utils/createImgPath.js';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const IMAGE = {
 	lunch_start: createImgPath('lunch_start.jpg'),
