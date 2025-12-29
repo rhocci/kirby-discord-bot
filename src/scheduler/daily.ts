@@ -32,7 +32,7 @@ export function createDailyTimeSlots() {
 	return { available, day_start, day_lunch, day_end, day_end_limit };
 }
 
-export async function initDailyAttendance() {
+export async function initDailyAttendance(isHoliday: boolean) {
 	const date = dayjs().tz('Asia/Seoul').format('YYYY-MM-DD');
 
 	const { data: members, error: memberError } = await supabase
@@ -49,6 +49,7 @@ export async function initDailyAttendance() {
 	const dailyLog = members.map((member) => ({
 		date,
 		member_id: member.id,
+		status: isHoliday ? 'excused' : 'absent',
 	}));
 
 	const { error: insertError } = await supabase
