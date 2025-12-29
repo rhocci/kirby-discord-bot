@@ -54,7 +54,9 @@ export async function initDailyAttendance(isHoliday: boolean) {
 
 	const { error: insertError } = await supabase
 		.from('attendance_log')
-		.insert(dailyLog);
+		.insert(dailyLog, {
+			ignoreDuplicates: true,
+		} as any);
 
 	if (insertError) {
 		console.log(`- 출석 로그 생성 실패`);

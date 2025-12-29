@@ -23,11 +23,15 @@ export function initSchedulers(client: Client) {
 			`====================\n${today} 일간(00시)\n====================`,
 		);
 
-		const { data: holidayData } = await supabase
+		const { data: holidayData, error } = await supabase
 			.from('holidays')
 			.select('name')
 			.eq('date', today)
 			.maybeSingle();
+
+		if (error) {
+			console.error('공휴일 체크 실패: ', error.message);
+		}
 
 		const isHoliday = !!holidayData;
 
