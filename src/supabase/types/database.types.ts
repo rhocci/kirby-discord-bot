@@ -52,6 +52,48 @@ export type Database = {
           },
         ]
       }
+      calendar: {
+        Row: {
+          ganji: string | null
+          lunar_date: string | null
+          memo: string | null
+          num: number
+          solar_date: string | null
+          yun: number | null
+        }
+        Insert: {
+          ganji?: string | null
+          lunar_date?: string | null
+          memo?: string | null
+          num?: number
+          solar_date?: string | null
+          yun?: number | null
+        }
+        Update: {
+          ganji?: string | null
+          lunar_date?: string | null
+          memo?: string | null
+          num?: number
+          solar_date?: string | null
+          yun?: number | null
+        }
+        Relationships: []
+      }
+      holidays: {
+        Row: {
+          date: string
+          name: string | null
+        }
+        Insert: {
+          date: string
+          name?: string | null
+        }
+        Update: {
+          date?: string
+          name?: string | null
+        }
+        Relationships: []
+      }
       members: {
         Row: {
           created_at: string | null

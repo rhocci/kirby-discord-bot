@@ -1,4 +1,4 @@
-import type { Client } from 'discord.js';
+import { ChannelType, type Client, EmbedBuilder } from 'discord.js';
 import dayjs from 'dayjs';
 import nodeCron from 'node-cron';
 import {
@@ -7,12 +7,14 @@ import {
 	initDailyAttendance,
 } from '@/scheduler/daily.js';
 import { createWeeklyStats } from '@/scheduler/weekly.js';
+import { colors } from '@/styles/palette.js';
+import supabase from '@/supabase/index.js';
 
 export function initSchedulers(client: Client) {
 	/** 평일 자정 태스크
-	 * 1. 출석 로그에다 모든 멤버 기본값으로 insert(날짜만 당일로) v
+	 * 1. 출석 로그에다 모든 멤버 기본값으로 insert(날짜만 당일로)
 	 * 2. 당일 공결신청 스레드 생성/예시 템플릿 고정
-	 * 3. 전날 스레드 권한 조정(가능하면)
+	 * 3. 공휴일일 시 전원 공결+휴일 알림으로 대체
 	 */
 	nodeCron.schedule('0 15 * * 0-4', async () => {
 		const today = dayjs().tz('Asia/Seoul').format('YYYY-MM-DD');
@@ -21,7 +23,44 @@ export function initSchedulers(client: Client) {
 			`====================\n${today} 일간(00시)\n====================`,
 		);
 
-		await initDailyAttendance();
+		const { data: holidayData, error } = await supabase
+			.from('holidays')
+			.select('name')
+			.eq('date', today)
+			.maybeSingle();
+
+		if (error) {
+			console.error('공휴일 체크 실패: ', error.message);
+		}
+
+		const isHoliday = !!holidayData;
+
+		await initDailyAttendance(isHoliday);
+
+		if (isHoliday) {
+			const defaultChannel = await client.channels
+				.fetch('1429832677531586626')
+				.catch(() => null);
+
+			if (!defaultChannel || !(defaultChannel.type === ChannelType.GuildText)) {
+				return console.error('유효하지 않은 채널');
+			}
+
+			const embed = new EmbedBuilder()
+				.setColor(colors.neon.blue)
+				.setTitle('⭐ 공휴일 안내')
+				.setDescription(
+					`오늘은 **${holidayData.name}**입니다!\n푹 쉬시고 내일 만나요~`,
+				)
+				.setTimestamp();
+
+			await defaultChannel.send({
+				embeds: [embed],
+			});
+
+			return console.log('공휴일 알림 생성 완료');
+		}
+
 		await createDailyThread(client);
 	});
 
