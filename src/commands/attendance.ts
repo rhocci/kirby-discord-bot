@@ -74,12 +74,6 @@ async function handleAttendance(interaction: ChatInputCommandInteraction) {
 			date: attendance.time.format('YYYY-MM-DD'),
 		});
 
-		if (!log) {
-			return await interaction.editReply({
-				content: `${commandText} 체크 실패!` + `\n(서버 오류)`,
-			});
-		}
-
 		if (log.status === 'excused') {
 			attendance.message = `${commandText} 체크 실패!` + `\n(공결 처리된 날짜)`;
 
@@ -129,9 +123,7 @@ async function handleAttendance(interaction: ChatInputCommandInteraction) {
 		});
 	} catch (err) {
 		console.error(err);
-		return await interaction.editReply({
-			content: attendance.message,
-		});
+		await interaction.editReply(`${commandText} 체크 실패!` + `\n(서버 오류)`);
 	}
 }
 
@@ -155,7 +147,7 @@ async function fetchAttendanceLog({
 		.single();
 
 	if (!memberData || memberError) {
-		console.error(memberError);
+		throw new Error('유효하지 않은 멤버');
 	} else {
 		const { data: attendanceLog, error: selectError } = await supabase
 			.from('attendance_log')
@@ -165,7 +157,7 @@ async function fetchAttendanceLog({
 			.single();
 
 		if (selectError) {
-			console.error(selectError);
+			throw new Error('DB 조회 실패');
 		} else {
 			log = { ...attendanceLog, username: memberData.name };
 		}
@@ -255,13 +247,15 @@ async function updateAttendanceLog({
 					.eq('id', log.id);
 
 				if (updateError) {
-					result.message = '(서버 오류)';
-					console.error(updateError);
-					break;
+					throw new Error('DB 업데이트 실패');
 				}
 
 				result.isChecked = true;
 				result.message = '스터디룸에 입장해 주세요.';
+
+				console.log(
+					`[${time.format('HH:mm')}] ${log.username} ${command} => ${result.status}`,
+				);
 			} catch (err) {
 				result.isChecked = false;
 				result.message = '(예기치 못한 오류)';
@@ -270,10 +264,6 @@ async function updateAttendanceLog({
 			break;
 		}
 	}
-
-	console.log(
-		`[${time.format('HH:mm')}] ${log.username} ${command} => ${result.status}`,
-	);
 
 	return result;
 }
