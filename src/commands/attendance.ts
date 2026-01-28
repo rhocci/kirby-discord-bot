@@ -3,12 +3,21 @@ import {
 	EmbedBuilder,
 	SlashCommandBuilder,
 } from 'discord.js';
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import path from 'path';
-import { createDailyTimeSlots } from '@/scheduler/daily.js';
+import { TODAY_TIME_SLOTS } from '@/scheduler/daily.js';
 import { colors } from '@/styles/palette.js';
 import supabase from '@/supabase/index.js';
 import { createImgPath } from '@/utils/createImgPath.js';
+
+type AttendanceStatus =
+	| 'absent'
+	| 'present'
+	| 'late_before_12'
+	| 'late_after_12'
+	| 'excused';
+
+const { available, day_start, day_lunch, day_end } = TODAY_TIME_SLOTS;
 
 const IMAGE = {
 	hi: createImgPath('hi.png'),
@@ -36,135 +45,225 @@ export const checkoutCommand = {
 };
 
 async function handleAttendance(interaction: ChatInputCommandInteraction) {
-	if (interaction.channelId !== '1430825863926251560') return;
+	if (interaction.channelId !== '1430825863926251560')
+		return await interaction.reply({
+			content: '유효하지 않은 채널입니다.',
+			ephemeral: true,
+		});
 
-	const TIME = createDailyTimeSlots();
+	await interaction.deferReply({ ephemeral: true });
+
 	const attendance: {
-		time: any;
-		isChecked: boolean;
-		thumbnail: any;
+		userId: string;
+		time: Dayjs;
+		command: string;
+		thumbnail: { attach: string; url: string };
 		message?: string;
-		status?:
-			| 'absent'
-			| 'present'
-			| 'late_before_12'
-			| 'late_after_12'
-			| 'excused';
 	} = {
+		userId: interaction.user.id,
 		time: dayjs(interaction.createdTimestamp).tz('Asia/Seoul'),
-		isChecked: false,
+		command: interaction.commandName,
 		thumbnail: IMAGE.so,
 	};
+
+	const commandText = attendance.command === 'check_in' ? '입실' : '퇴실';
+
+	try {
+		const log = await fetchAttendanceLog({
+			user_id: attendance.userId,
+			date: attendance.time.format('YYYY-MM-DD'),
+		});
+
+		if (log.status === 'excused') {
+			attendance.message = `${commandText} 체크 실패!` + `\n(공결 처리된 날짜)`;
+
+			return await interaction.editReply({
+				content: attendance.message,
+			});
+		}
+
+		const result = await updateAttendanceLog({
+			log,
+			command: attendance.command,
+			time: attendance.time,
+		});
+
+		attendance.message =
+			`${commandText} 체크 ` +
+			`${result.isChecked ? '성공' : '실패'}!\n` +
+			`${result.message}`;
+
+		if (result.isChecked) {
+			attendance.thumbnail =
+				attendance.command === 'check_in'
+					? result.status === 'present'
+						? IMAGE.hi
+						: IMAGE.cry
+					: IMAGE.good;
+		}
+
+		const embed = new EmbedBuilder()
+			.setColor(result.isChecked ? colors.neon.green : colors.neon.red)
+			.setAuthor({
+				name: log.username,
+				iconURL: interaction.user.displayAvatarURL(),
+			})
+			.setThumbnail(attendance.thumbnail.url)
+			.setDescription(attendance.message)
+			.setFooter({ text: `${attendance.time.format('YYYY-MM-DD-T HH:mm')}` });
+
+		await interaction.editReply({
+			embeds: [embed],
+			files: [
+				{
+					attachment: attendance.thumbnail.attach,
+					name: path.basename(attendance.thumbnail.attach),
+				},
+			],
+		});
+	} catch (err) {
+		console.error(err);
+		await interaction.editReply(`${commandText} 체크 실패!` + `\n(서버 오류)`);
+	}
+}
+
+async function fetchAttendanceLog({
+	user_id,
+	date,
+}: {
+	user_id: string;
+	date: string;
+}) {
+	let log: {
+		id: string;
+		status: string;
+		username: string;
+	} | null = null;
 
 	const { data: memberData, error: memberError } = await supabase
 		.from('members')
 		.select('id, name')
-		.eq('discord_id', interaction.user.id)
+		.eq('discord_id', user_id)
 		.single();
 
 	if (!memberData || memberError) {
-		console.error(memberError?.message ?? '유효하지 않은 구성원');
-		return await interaction.reply('누구세요?');
-	}
-
-	const { data: attendanceLog } = await supabase
-		.from('attendance_log')
-		.select('status')
-		.eq('member_id', memberData.id)
-		.eq('date', attendance.time.format('YYYY-MM-DD'))
-		.single();
-
-	if (interaction.commandName === 'check_in') {
-		if (attendanceLog?.status === 'excused') {
-			attendance.message = '입실 체크 실패!\n(공결 처리된 날짜)';
-		} else if (attendanceLog?.status !== 'absent') {
-			attendance.message = '입실 체크 실패!\n(이미 입실한 날짜)';
-		} else if (
-			attendance.time >= TIME.available &&
-			attendance.time < TIME.day_start
-		) {
-			attendance.isChecked = true;
-			attendance.thumbnail = IMAGE.hi;
-			attendance.message = '입실 체크 완료!\n스터디룸에 입장해 주세요.';
-			attendance.status = 'present';
-		} else if (
-			attendance.time >= TIME.day_start &&
-			attendance.time <= TIME.day_lunch
-		) {
-			attendance.isChecked = true;
-			attendance.thumbnail = IMAGE.cry;
-			attendance.message =
-				'입실 체크 완료!\n스터디룸에 입장해 주세요. (12시 전 지각)';
-			attendance.status = 'late_before_12';
-		} else if (
-			attendance.time > TIME.day_lunch &&
-			attendance.time < TIME.day_end
-		) {
-			attendance.isChecked = true;
-			attendance.thumbnail = IMAGE.cry;
-			attendance.message =
-				'입실 체크 완료!\n스터디룸에 입장해 주세요. (12시 이후 지각)';
-			attendance.status = 'late_after_12';
-		} else {
-			attendance.message =
-				'입실 체크 시간이 아닙니다.\n(입실 가능 시간: 08:00 - 15:59)';
-		}
-	}
-
-	if (interaction.commandName === 'check_out') {
-		if (attendanceLog?.status === 'excused') {
-			attendance.message = '퇴실 체크 실패!\n(공결 처리된 날짜)';
-		} else if (attendanceLog?.status === 'absent') {
-			attendance.message = '퇴실 체크 실패!\n(입실하지 않은 날짜)';
-		} else if (
-			attendance.time >= TIME.day_end ||
-			attendance.time <= TIME.day_end_limit
-		) {
-			attendance.isChecked = true;
-			attendance.thumbnail = IMAGE.good;
-			attendance.message = '퇴실 체크 완료!\n학습 기록을 작성해 주세요.';
-		} else {
-			attendance.message =
-				'퇴실 체크 시간이 아닙니다.\n(퇴실 가능 시간: 16:00 - 23:59)';
-		}
-	}
-
-	if (attendance.isChecked) {
-		const { error: attendanceError } = await supabase
+		throw new Error('유효하지 않은 멤버');
+	} else {
+		const { data: attendanceLog, error: selectError } = await supabase
 			.from('attendance_log')
-			.update({
-				status: attendance.status,
-				[interaction.commandName]: attendance.time,
-			})
+			.select('id, status')
 			.eq('member_id', memberData.id)
-			.eq('date', attendance.time.format('YYYY-MM-DD'));
-		if (attendanceError) {
-			console.error(attendanceError.message);
-			return;
-		}
+			.eq('date', date)
+			.single();
 
-		console.log(
-			`[${attendance.time.format('HH:mm')}] ${memberData.name} ${attendance.message}`,
-		);
+		if (selectError) {
+			throw new Error('DB 조회 실패');
+		} else {
+			log = { ...attendanceLog, username: memberData.name };
+		}
 	}
 
-	const embed = new EmbedBuilder()
-		.setColor(attendance.isChecked ? colors.neon.green : colors.neon.red)
-		.setAuthor({
-			name: memberData.name,
-			iconURL: interaction.user.displayAvatarURL(),
-		})
-		.setThumbnail(attendance.thumbnail.url)
-		.setDescription(attendance.message ?? '출석 체크 오류')
-		.setTimestamp();
+	return log;
+}
 
-	await interaction.reply({
-		embeds: [embed],
-		files: [
-			{
-				attachment: attendance.thumbnail.attach,
-				name: path.basename(attendance.thumbnail.attach),
-			},
-		],
-	});
+async function updateAttendanceLog({
+	log,
+	command,
+	time,
+}: {
+	log: { id: string; status: string; username: string };
+	command: string;
+	time: Dayjs;
+}) {
+	const result: {
+		isChecked: boolean;
+		status: AttendanceStatus;
+		message: string;
+	} = {
+		isChecked: false,
+		status: 'present',
+		message: '',
+	};
+
+	switch (command) {
+		case 'check_in': {
+			if (log.status !== 'absent') {
+				result.message = '(이미 입실한 날짜)';
+				break;
+			}
+			if (time < available || time >= day_end) {
+				result.message = '(입실 가능 시간: 08:00 - 15:59)';
+				break;
+			}
+
+			result.status =
+				time <= day_start
+					? 'present'
+					: time <= day_lunch
+						? 'late_before_12'
+						: 'late_after_12';
+
+			try {
+				const { error: updateError } = await supabase
+					.from('attendance_log')
+					.update({
+						status: result.status,
+						[command]: time.format(),
+					})
+					.eq('id', log.id);
+
+				if (updateError) {
+					result.message = '(서버 오류)';
+					console.error(updateError);
+					break;
+				}
+
+				result.isChecked = true;
+				result.message = '스터디룸에 입장해 주세요.';
+			} catch (err) {
+				result.isChecked = false;
+				result.message = '(예기치 못한 오류)';
+				console.error(err);
+			}
+
+			break;
+		}
+		case 'check_out': {
+			if (log.status === 'absent') {
+				result.message = '(입실하지 않은 날짜)';
+				break;
+			}
+			if (time < day_end) {
+				result.message = '(퇴실 가능 시간: 16:00 - 23:59)';
+				break;
+			}
+
+			try {
+				const { error: updateError } = await supabase
+					.from('attendance_log')
+					.update({
+						check_out: time.format(),
+					})
+					.eq('id', log.id);
+
+				if (updateError) {
+					throw new Error('DB 업데이트 실패');
+				}
+
+				result.isChecked = true;
+				result.message = '스터디룸에 입장해 주세요.';
+
+				console.log(
+					`[${time.format('HH:mm')}] ${log.username} ${command} => ${result.status}`,
+				);
+			} catch (err) {
+				result.isChecked = false;
+				result.message = '(예기치 못한 오류)';
+				console.error(err);
+			}
+			break;
+		}
+	}
+
+	return result;
 }

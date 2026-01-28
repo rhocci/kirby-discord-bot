@@ -21,6 +21,20 @@ const IMAGE = {
 	lunch_end: createImgPath('lunch_end.jpg'),
 };
 
+export const TODAY = dayjs()
+	.tz('Asia/Seoul')
+	.minute(0)
+	.second(0)
+	.millisecond(0);
+
+export const TODAY_TIME_SLOTS = {
+	available: TODAY.hour(8),
+	day_start: TODAY.hour(10).minute(1),
+	day_lunch: TODAY.hour(12),
+	day_end: TODAY.hour(16),
+	day_end_limit: TODAY.hour(23).minute(59).second(59).millisecond(999),
+};
+
 export function createDailyTimeSlots() {
 	const today = dayjs().tz('Asia/Seoul').minute(0).second(0).millisecond(0);
 	const available = today.hour(8);
