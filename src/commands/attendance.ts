@@ -74,20 +74,6 @@ async function handleAttendance(interaction: ChatInputCommandInteraction) {
 			date: attendance.time.format('YYYY-MM-DD'),
 		});
 
-		if (log.status === 'excused') {
-			attendance.message = `${commandText} 체크 실패!` + `\n(공결 처리된 날짜)`;
-			return await interaction.editReply(attendance.message);
-		}
-
-		if (
-			(attendance.command === 'check_in' && log.checked.in) ||
-			(attendance.command === 'check_out' && log.checked.out)
-		) {
-			attendance.message =
-				`${commandText} 체크 실패!` + `\n(이미 ${commandText}한 날짜)`;
-			return await interaction.editReply(attendance.message);
-		}
-
 		const result = await updateAttendanceLog({
 			log,
 			command: attendance.command,
@@ -185,7 +171,12 @@ async function updateAttendanceLog({
 	command,
 	time,
 }: {
-	log: { id: string; status: string; username: string };
+	log: {
+		id: string;
+		status: string;
+		username: string;
+		checked: { in: boolean; out: boolean };
+	};
 	command: string;
 	time: Dayjs;
 }) {
@@ -199,83 +190,91 @@ async function updateAttendanceLog({
 		message: '',
 	};
 
-	switch (command) {
-		case 'check_in': {
-			if (log.status !== 'absent') {
-				result.message = '(이미 입실한 날짜)';
-				break;
-			}
-			if (time < available || time >= day_end) {
-				result.message = '(입실 가능 시간: 08:00 - 15:59)';
-				break;
-			}
-
-			result.status =
-				time <= day_start
-					? 'present'
-					: time <= day_lunch
-						? 'late_before_12'
-						: 'late_after_12';
-
-			try {
-				const { error: updateError } = await supabase
-					.from('attendance_log')
-					.update({
-						status: result.status,
-						[command]: time.format(),
-					})
-					.eq('id', log.id);
-
-				if (updateError) {
-					result.message = '(서버 오류)';
-					console.error(updateError);
+	if (log.status === 'excused') {
+		result.message = '공결 처리된 날짜';
+	} else {
+		switch (command) {
+			case 'check_in': {
+				if (log.checked.in) {
+					result.message = '(이미 입실한 날짜)';
+					break;
+				}
+				if (time < available || time >= day_end) {
+					result.message = '(입실 가능 시간: 08:00 - 15:59)';
 					break;
 				}
 
-				result.isChecked = true;
-				result.message = '스터디룸에 입장해 주세요.';
-			} catch (err) {
-				result.isChecked = false;
-				result.message = '(예기치 못한 오류)';
-				console.error(err);
-			}
+				result.status =
+					time <= day_start
+						? 'present'
+						: time <= day_lunch
+							? 'late_before_12'
+							: 'late_after_12';
 
-			break;
-		}
-		case 'check_out': {
-			if (log.status === 'absent') {
-				result.message = '(입실하지 않은 날짜)';
-				break;
-			}
-			if (time < day_end) {
-				result.message = '(퇴실 가능 시간: 16:00 - 23:59)';
-				break;
-			}
+				try {
+					const { error: updateError } = await supabase
+						.from('attendance_log')
+						.update({
+							status: result.status,
+							[command]: time.format(),
+						})
+						.eq('id', log.id);
 
-			try {
-				const { error: updateError } = await supabase
-					.from('attendance_log')
-					.update({
-						check_out: time.format(),
-					})
-					.eq('id', log.id);
+					if (updateError) {
+						result.message = '(서버 오류)';
+						console.error(updateError);
+						break;
+					}
 
-				if (updateError) {
-					throw new Error('DB 업데이트 실패');
+					result.isChecked = true;
+					result.message = '스터디룸에 입장해 주세요.';
+				} catch (err) {
+					result.isChecked = false;
+					result.message = '(예기치 못한 오류)';
+					console.error(err);
 				}
 
-				result.isChecked = true;
-				result.message = '학습 기록을 작성해 주세요.';
-
-				console.log(
-					`[${time.format('HH:mm')}] ${log.username} ${command} => ${result.status}`,
-				);
-			} catch (err) {
-				result.isChecked = false;
-				result.message = '(예기치 못한 오류)';
-				console.error(err);
+				break;
 			}
-			break;
+			case 'check_out': {
+				if (time < day_end) {
+					result.message = '(퇴실 가능 시간: 16:00 - 23:59)';
+					break;
+				}
+				if (!log.checked.in) {
+					result.message = '(입실하지 않은 날짜)';
+					break;
+				}
+				if (log.checked.out) {
+					result.message = '(이미 퇴실한 날짜)';
+					break;
+				}
+
+				try {
+					const { error: updateError } = await supabase
+						.from('attendance_log')
+						.update({
+							check_out: time.format(),
+						})
+						.eq('id', log.id);
+
+					if (updateError) {
+						throw new Error('DB 업데이트 실패');
+					}
+
+					result.isChecked = true;
+					result.message = '학습 기록을 작성해 주세요.';
+
+					console.log(
+						`[${time.format('HH:mm')}] ${log.username} ${command} => ${result.status}`,
+					);
+				} catch (err) {
+					result.isChecked = false;
+					result.message = '(예기치 못한 오류)';
+					console.error(err);
+				}
+				break;
+			}
 		}
 	}
 
