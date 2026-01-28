@@ -51,7 +51,7 @@ async function handleAttendance(interaction: ChatInputCommandInteraction) {
 			ephemeral: true,
 		});
 
-	await interaction.deferReply({ ephemeral: true });
+	await interaction.deferReply();
 
 	const attendance: {
 		userId: string;
@@ -110,7 +110,7 @@ async function handleAttendance(interaction: ChatInputCommandInteraction) {
 			})
 			.setThumbnail(attendance.thumbnail.url)
 			.setDescription(attendance.message)
-			.setFooter({ text: `${attendance.time.format('YYYY-MM-DD-T HH:mm')}` });
+			.setFooter({ text: `${attendance.time.format('YYYY-MM-DD HH:mm')}` });
 
 		await interaction.editReply({
 			embeds: [embed],
@@ -251,7 +251,7 @@ async function updateAttendanceLog({
 				}
 
 				result.isChecked = true;
-				result.message = '스터디룸에 입장해 주세요.';
+				result.message = '학습 기록을 작성해 주세요.';
 
 				console.log(
 					`[${time.format('HH:mm')}] ${log.username} ${command} => ${result.status}`,
