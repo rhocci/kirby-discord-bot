@@ -144,7 +144,7 @@ async function fetchAttendanceLog({
 }) {
 	let log: {
 		id: string;
-		status: string | null;
+		status: string;
 		username: string;
 	} | null = null;
 
@@ -179,12 +179,12 @@ async function updateAttendanceLog({
 	command,
 	time,
 }: {
-	log: { id: string; status: string | null; username: string };
+	log: { id: string; status: string; username: string };
 	command: string;
 	time: Dayjs;
 }) {
 	const result: {
-		isChecked: Boolean;
+		isChecked: boolean;
 		status: AttendanceStatus;
 		message: string;
 	} = {

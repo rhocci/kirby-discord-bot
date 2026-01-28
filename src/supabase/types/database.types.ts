@@ -22,7 +22,7 @@ export type Database = {
           date: string
           id: string
           member_id: string
-          status: string | null
+          status: string
         }
         Insert: {
           check_in?: string | null
@@ -31,7 +31,7 @@ export type Database = {
           date: string
           id?: string
           member_id: string
-          status?: string | null
+          status?: string
         }
         Update: {
           check_in?: string | null
@@ -40,7 +40,7 @@ export type Database = {
           date?: string
           id?: string
           member_id?: string
-          status?: string | null
+          status?: string
         }
         Relationships: [
           {
