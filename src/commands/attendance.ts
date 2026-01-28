@@ -36,7 +36,11 @@ export const checkoutCommand = {
 };
 
 async function handleAttendance(interaction: ChatInputCommandInteraction) {
-	if (interaction.channelId !== '1430825863926251560') return;
+	if (interaction.channelId !== '1430825863926251560')
+		return await interaction.reply({
+			content: '유효하지 않은 채널입니다.',
+			ephemeral: true,
+		});
 
 	const TIME = createDailyTimeSlots();
 	const attendance: {
