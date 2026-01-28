@@ -57,17 +57,16 @@ async function handleAttendance(interaction: ChatInputCommandInteraction) {
 		userId: string;
 		time: Dayjs;
 		command: string;
-		commandName: string;
 		thumbnail: { attach: string; url: string };
-		message: string;
+		message?: string;
 	} = {
 		userId: interaction.user.id,
 		time: dayjs(interaction.createdTimestamp).tz('Asia/Seoul'),
-		command: interaction.command?.name!,
-		commandName: interaction.commandName || '',
+		command: interaction.commandName,
 		thumbnail: IMAGE.so,
-		message: '',
 	};
+
+	const commandText = attendance.command === 'check_in' ? '입실' : '퇴실';
 
 	try {
 		const log = await fetchAttendanceLog({
@@ -77,13 +76,12 @@ async function handleAttendance(interaction: ChatInputCommandInteraction) {
 
 		if (!log) {
 			return await interaction.editReply({
-				content: '출석 체크 실패!\n(서버 오류',
+				content: `${commandText} 체크 실패!` + `\n(서버 오류)`,
 			});
 		}
 
 		if (log.status === 'excused') {
-			attendance.message =
-				`${attendance.commandName} 체크 실패!` + `\n(공결 처리된 날짜)`;
+			attendance.message = `${commandText} 체크 실패!` + `\n(공결 처리된 날짜)`;
 
 			return await interaction.editReply({
 				content: attendance.message,
@@ -92,12 +90,12 @@ async function handleAttendance(interaction: ChatInputCommandInteraction) {
 
 		const result = await updateAttendanceLog({
 			log,
-			command: interaction.command?.name!,
+			command: attendance.command,
 			time: attendance.time,
 		});
 
 		attendance.message =
-			`${attendance.commandName} 체크 ` +
+			`${commandText} 체크 ` +
 			`${result.isChecked ? '성공' : '실패'}!\n` +
 			`${result.message}`;
 
