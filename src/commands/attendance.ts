@@ -76,10 +76,16 @@ async function handleAttendance(interaction: ChatInputCommandInteraction) {
 
 		if (log.status === 'excused') {
 			attendance.message = `${commandText} 체크 실패!` + `\n(공결 처리된 날짜)`;
+			return await interaction.editReply(attendance.message);
+		}
 
-			return await interaction.editReply({
-				content: attendance.message,
-			});
+		if (
+			(attendance.command === 'check_in' && log.checked.in) ||
+			(attendance.command === 'check_out' && log.checked.out)
+		) {
+			attendance.message =
+				`${commandText} 체크 실패!` + `\n(이미 ${commandText}한 날짜)`;
+			return await interaction.editReply(attendance.message);
 		}
 
 		const result = await updateAttendanceLog({
@@ -138,6 +144,7 @@ async function fetchAttendanceLog({
 		id: string;
 		status: string;
 		username: string;
+		checked: { in: boolean; out: boolean };
 	} | null = null;
 
 	const { data: memberData, error: memberError } = await supabase
@@ -151,7 +158,7 @@ async function fetchAttendanceLog({
 	} else {
 		const { data: attendanceLog, error: selectError } = await supabase
 			.from('attendance_log')
-			.select('id, status')
+			.select('id, status, check_in, check_out')
 			.eq('member_id', memberData.id)
 			.eq('date', date)
 			.single();
@@ -159,7 +166,14 @@ async function fetchAttendanceLog({
 		if (selectError) {
 			throw new Error('DB 조회 실패');
 		} else {
-			log = { ...attendanceLog, username: memberData.name };
+			log = {
+				...attendanceLog,
+				username: memberData.name,
+				checked: {
+					in: !!attendanceLog.check_in,
+					out: !!attendanceLog.check_out,
+				},
+			};
 		}
 	}
 
