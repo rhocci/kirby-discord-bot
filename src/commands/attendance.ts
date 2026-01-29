@@ -227,6 +227,13 @@ async function updateAttendanceLog({
 
 					result.isChecked = true;
 					result.message = '스터디룸에 입장해 주세요.';
+
+					if (result.status !== 'present') {
+						result.message +=
+							result.message === 'late_before_12'
+								? '(12시 전 지각)'
+								: '(12시 이후 지각)';
+					}
 				} catch (err) {
 					result.isChecked = false;
 					result.message = '(예기치 못한 오류)';
