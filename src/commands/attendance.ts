@@ -199,17 +199,16 @@ async function updateAttendanceLog({
 					result.message = '(이미 입실한 날짜)';
 					break;
 				}
-				if (time < available || time >= day_end) {
+				if (time.isAfter(available) || time.isAfter(day_end)) {
 					result.message = '(입실 가능 시간: 08:00 - 15:59)';
 					break;
 				}
 
-				result.status =
-					time <= day_start
-						? 'present'
-						: time <= day_lunch
-							? 'late_before_12'
-							: 'late_after_12';
+				result.status = time.isBefore(day_start)
+					? 'present'
+					: time.isBefore(day_lunch)
+						? 'late_before_12'
+						: 'late_after_12';
 
 				try {
 					const { error: updateError } = await supabase
@@ -237,7 +236,7 @@ async function updateAttendanceLog({
 				break;
 			}
 			case 'check_out': {
-				if (time < day_end) {
+				if (time.isBefore(day_end)) {
 					result.message = '(퇴실 가능 시간: 16:00 - 23:59)';
 					break;
 				}
