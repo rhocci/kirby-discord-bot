@@ -199,7 +199,7 @@ async function updateAttendanceLog({
 					result.message = '(이미 입실한 날짜)';
 					break;
 				}
-				if (time.isAfter(available) || time.isAfter(day_end)) {
+				if (time.isBefore(available) || time.isAfter(day_end)) {
 					result.message = '(입실 가능 시간: 08:00 - 15:59)';
 					break;
 				}
