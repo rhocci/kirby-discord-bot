@@ -5,7 +5,7 @@ import {
 } from 'discord.js';
 import dayjs, { Dayjs } from 'dayjs';
 import path from 'path';
-import { TODAY_TIME_SLOTS } from '@/scheduler/daily.js';
+import { getTodayTimeSlots } from '@/scheduler/daily.js';
 import { colors } from '@/styles/palette.js';
 import supabase from '@/supabase/index.js';
 import { createImgPath } from '@/utils/createImgPath.js';
@@ -17,7 +17,7 @@ type AttendanceStatus =
 	| 'late_after_12'
 	| 'excused';
 
-const { available, day_start, day_lunch, day_end } = TODAY_TIME_SLOTS;
+const { available, day_start, day_lunch, day_end } = getTodayTimeSlots();
 
 const IMAGE = {
 	hi: createImgPath('hi.png'),
