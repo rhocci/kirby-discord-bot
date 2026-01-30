@@ -35,17 +35,6 @@ export const TODAY_TIME_SLOTS = {
 	day_end_limit: TODAY.hour(23).minute(59).second(59).millisecond(999),
 };
 
-export function createDailyTimeSlots() {
-	const today = dayjs().tz('Asia/Seoul').minute(0).second(0).millisecond(0);
-	const available = today.hour(8);
-	const day_start = today.hour(10).minute(1);
-	const day_lunch = today.hour(12);
-	const day_end = today.hour(16);
-	const day_end_limit = today.hour(23).minute(59).second(59).millisecond(999);
-
-	return { available, day_start, day_lunch, day_end, day_end_limit };
-}
-
 export async function initDailyAttendance(isHoliday: boolean) {
 	const date = dayjs().tz('Asia/Seoul').format('YYYY-MM-DD');
 
