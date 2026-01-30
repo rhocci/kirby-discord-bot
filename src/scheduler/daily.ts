@@ -21,19 +21,17 @@ const IMAGE = {
 	lunch_end: createImgPath('lunch_end.jpg'),
 };
 
-export const TODAY = dayjs()
-	.tz('Asia/Seoul')
-	.minute(0)
-	.second(0)
-	.millisecond(0);
+export function getTodayTimeSlots() {
+	const today = dayjs().tz('Asia/Seoul').startOf('day');
 
-export const TODAY_TIME_SLOTS = {
-	available: TODAY.hour(8),
-	day_start: TODAY.hour(10).minute(1),
-	day_lunch: TODAY.hour(12),
-	day_end: TODAY.hour(16),
-	day_end_limit: TODAY.hour(23).minute(59).second(59).millisecond(999),
-};
+	return {
+		available: today.hour(8),
+		day_start: today.hour(10).minute(1),
+		day_lunch: today.hour(12),
+		day_end: today.hour(16),
+		day_end_limit: today.endOf('day'),
+	};
+}
 
 export async function initDailyAttendance(isHoliday: boolean) {
 	const date = dayjs().tz('Asia/Seoul').format('YYYY-MM-DD');
