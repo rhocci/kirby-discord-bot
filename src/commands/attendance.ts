@@ -230,7 +230,7 @@ async function updateAttendanceLog({
 
 					if (result.status !== 'present') {
 						result.message +=
-							result.message === 'late_before_12'
+							result.status === 'late_before_12'
 								? '(12시 전 지각)'
 								: '(12시 이후 지각)';
 					}
