@@ -4,11 +4,16 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 import dayjs, { Dayjs } from 'dayjs';
+import timezone from 'dayjs/plugin/timezone.js';
+import utc from 'dayjs/plugin/utc.js';
 import path from 'path';
 import { getTodayTimeSlots } from '@/scheduler/daily.js';
 import { colors } from '@/styles/palette.js';
 import supabase from '@/supabase/index.js';
 import { createImgPath } from '@/utils/createImgPath.js';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 type AttendanceStatus =
 	| 'absent'
@@ -16,8 +21,6 @@ type AttendanceStatus =
 	| 'late_before_12'
 	| 'late_after_12'
 	| 'excused';
-
-const { available, day_start, day_lunch, day_end } = getTodayTimeSlots();
 
 const IMAGE = {
 	hi: createImgPath('hi.png'),
@@ -180,6 +183,8 @@ async function updateAttendanceLog({
 	command: string;
 	time: Dayjs;
 }) {
+	const { available, day_start, day_lunch, day_end } = getTodayTimeSlots();
+
 	const result: {
 		isChecked: boolean;
 		status: AttendanceStatus;
