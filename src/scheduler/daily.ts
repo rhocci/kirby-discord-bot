@@ -33,6 +33,22 @@ export function getTodayTimeSlots() {
 	};
 }
 
+export async function checkIsHoliday() {
+	const today = dayjs().tz('Asia/Seoul').format('YYYY-MM-DD');
+
+	const { data: holidayData, error } = await supabase
+		.from('holidays')
+		.select('name')
+		.eq('date', today)
+		.maybeSingle();
+
+	if (error) {
+		console.error('공휴일 체크 실패: ', error.message);
+	}
+
+	return { isHoliday: !!holidayData, holidayName: holidayData?.name };
+}
+
 export async function initDailyAttendance(isHoliday: boolean) {
 	const date = dayjs().tz('Asia/Seoul').format('YYYY-MM-DD');
 
@@ -113,7 +129,13 @@ export async function createDailyThread(client: Client) {
 	console.log(`- 공결신청 스레드 생성 완료: ${thread.name}`);
 }
 
-export async function alertLunchTime(client: Client, status: 'start' | 'end') {
+export async function alertLunchTime(
+	client: Client,
+	status: 'start' | 'end',
+	isHoliday: boolean,
+) {
+	if (isHoliday) return;
+
 	const defaultChannel = await client.channels
 		.fetch('1429832677531586626')
 		.catch(() => null);
