@@ -32,10 +32,6 @@ export function initSchedulers(client: Client) {
 		);
 
 		if (cachedIsHoliday) {
-			if (!defaultChannel || !defaultChannel.isTextBased()) {
-				return console.error('유효하지 않은 채널');
-			}
-
 			const embed = new EmbedBuilder()
 				.setColor(colors.neon.blue)
 				.setTitle('⭐ 공휴일 안내')
@@ -44,9 +40,11 @@ export function initSchedulers(client: Client) {
 				)
 				.setTimestamp();
 
-			await defaultChannel.send({
-				embeds: [embed],
-			});
+			if (defaultChannel && defaultChannel.isTextBased()) {
+				await defaultChannel.send({
+					embeds: [embed],
+				});
+			}
 
 			return console.log('공휴일 알림 생성 완료');
 		}

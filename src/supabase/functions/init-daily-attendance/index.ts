@@ -16,7 +16,7 @@ if (!supabaseUrl || !supabaseServiceKey) {
 
 const supabase = createClient<Database>(supabaseUrl, supabaseServiceKey);
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
 	try {
 		const today = dayjs().tz('Asia/Seoul').format('YYYY-MM-DD');
 
@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
 
 		if (!members || memberError) throw new Error('멤버 조회 실패');
 
-		const dailyLog = members.map((member) => ({
+		const dailyLog = members.map((member: { id: string }) => ({
 			date: today,
 			member_id: member.id,
 			status: isHoliday ? 'excused' : 'absent',
