@@ -63,8 +63,9 @@ async function handleAttendance(interaction: ChatInputCommandInteraction) {
 		.catch(() => null);
 
 	if (
-		interaction.channelId !== attendanceChannelId ||
-		!attendanceChannel.isTextBased()
+		!attendanceChannel ||
+		!attendanceChannel.isTextBased() ||
+		interaction.channelId !== attendanceChannelId
 	) {
 		return await interaction.reply({
 			content: '유효하지 않은 채널입니다.',
