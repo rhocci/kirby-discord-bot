@@ -49,41 +49,6 @@ export async function checkIsHoliday() {
 	return { isHoliday: !!holidayData, holidayName: holidayData?.name };
 }
 
-export async function initDailyAttendance(isHoliday: boolean) {
-	const date = dayjs().tz('Asia/Seoul').format('YYYY-MM-DD');
-
-	const { data: members, error: memberError } = await supabase
-		.from('members')
-		.select('id')
-		.eq('is_active', true);
-
-	if (!members || memberError) {
-		console.log(`- 출석 로그 생성 실패`);
-		console.error(`-> ${memberError.message}`);
-		return;
-	}
-
-	const dailyLog = members.map((member) => ({
-		date,
-		member_id: member.id,
-		status: isHoliday ? 'excused' : 'absent',
-	}));
-
-	const { error: insertError } = await supabase
-		.from('attendance_log')
-		.insert(dailyLog, {
-			ignoreDuplicates: true,
-		} as any);
-
-	if (insertError) {
-		console.log(`- 출석 로그 생성 실패`);
-		console.error(`-> ${insertError.message}`);
-		return;
-	}
-
-	console.log(`- 출석 로그 생성 완료: ${members.length}명`);
-}
-
 export async function createDailyThread(client: Client) {
 	const excusionChannel = await client.channels
 		.fetch('1436641965499486329')

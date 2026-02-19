@@ -1,30 +1,58 @@
-// Follow this setup guide to integrate the Deno language server with your editor:
-// https://deno.land/manual/getting_started/setup_your_environment
-// This enables autocomplete, go to definition, etc.
-// Setup type definitions for built-in Supabase Runtime APIs
-// import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
+import type { Database } from '../types/database.types.ts';
 
-// console.log('Hello from Functions!');
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const supabase = createClient<Database>(supabaseUrl, supabaseServiceKey);
 
-// Deno.serve(async (req) => {
-// 	const { name } = await req.json();
-// 	const data = {
-// 		message: `Hello ${name}!`,
-// 	};
+Deno.serve(async (req) => {
+	try {
+		const date = dayjs().tz('Asia/Seoul').format('YYYY-MM-DD');
 
-// 	return new Response(JSON.stringify(data), {
-// 		headers: { 'Content-Type': 'application/json' },
-// 	});
-// });
+		const { data: holidayData } = await supabase
+			.from('holidays')
+			.select('name')
+			.eq('date', today)
+			.maybeSingle();
 
-/* To invoke locally:
+		const isHoliday = !!holidayData;
 
-  1. Run `supabase start` (see: https://supabase.com/docs/reference/cli/supabase-start)
-  2. Make an HTTP request:
+		const { data: members, error: memberError } = await supabase
+			.from('members')
+			.select('id')
+			.eq('is_active', true);
 
-  curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/initDailyAttendance' \
-    --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' \
-    --header 'Content-Type: application/json' \
-    --data '{"name":"Functions"}'
+		if (!members || memberError)
+			throw new Error('Member Error: 멤버 조회 실패');
 
-*/
+		const dailyLog = members.map((member) => ({
+			date,
+			member_id: member.id,
+			status: isHoliday ? 'excused' : 'absent',
+		}));
+
+		const { error: insertError } = await supabase
+			.from('attendance_log')
+			.insert(dailyLog, {
+				ignoreDuplicates: true,
+			} as any);
+
+		if (insertError) throw new Error('Insert Error: 출석 로그 생성 실패');
+
+		return new Response(
+			JSON.stringify({
+				message: 'Attendance initialized success',
+			}),
+			{
+				headers: { 'Content-Type': 'application/json' },
+				status: 200,
+			},
+		);
+	} catch (err) {
+		return new Response(JSON.stringify({ error: err.message }), {
+			headers: { 'Content-Type': 'application/json' },
+			status: 500,
+		});
+	}
+});
