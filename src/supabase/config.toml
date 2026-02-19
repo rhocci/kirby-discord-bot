@@ -348,8 +348,7 @@ s3_access_key = "env(S3_ACCESS_KEY)"
 # Configures AWS_SECRET_ACCESS_KEY for S3 bucket
 s3_secret_key = "env(S3_SECRET_KEY)"
 
-[functions.initDailyAttendance]
+[functions.init-daily-attendance]
 enabled = true
 verify_jwt = false 
-schedule = "0 15 * * * "
-import_map = "./functions/initDailyAttendance/deno.json"
+import_map = "./functions/init-daily-attendance/deno.json"
