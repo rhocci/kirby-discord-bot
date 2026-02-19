@@ -1,11 +1,10 @@
-import { ChannelType, type Client, EmbedBuilder } from 'discord.js';
+import { type Client, EmbedBuilder } from 'discord.js';
 import dayjs from 'dayjs';
 import nodeCron from 'node-cron';
 import {
 	alertLunchTime,
 	checkIsHoliday,
 	createDailyThread,
-	initDailyAttendance,
 } from '@/scheduler/daily.js';
 import { createWeeklyStats } from '@/scheduler/weekly.js';
 import { colors } from '@/styles/palette.js';
@@ -13,7 +12,16 @@ import { colors } from '@/styles/palette.js';
 let cachedIsHoliday = false;
 
 export function initSchedulers(client: Client) {
+	const defaultChannelId = process.env.DEFAULT_CHANNEL_ID;
+
+	if (!defaultChannelId)
+		return console.error('환경변수 조회 실패: DEFAULT_CHANNEL_ID');
+
 	nodeCron.schedule('0 15 * * 0-4', async () => {
+		const defaultChannel = await client.channels
+			.fetch(defaultChannelId)
+			.catch(() => null);
+
 		const today = dayjs().tz('Asia/Seoul').format('YYYY-MM-DD');
 		const { isHoliday, holidayName } = await checkIsHoliday();
 
@@ -23,14 +31,8 @@ export function initSchedulers(client: Client) {
 			`====================\n${today} 일간(00시)\n====================`,
 		);
 
-		await initDailyAttendance(isHoliday);
-
 		if (cachedIsHoliday) {
-			const defaultChannel = await client.channels
-				.fetch('1429832677531586626')
-				.catch(() => null);
-
-			if (!defaultChannel || !(defaultChannel.type === ChannelType.GuildText)) {
+			if (!defaultChannel || !defaultChannel.isTextBased()) {
 				return console.error('유효하지 않은 채널');
 			}
 
