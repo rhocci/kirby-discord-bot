@@ -350,5 +350,5 @@ s3_secret_key = "env(S3_SECRET_KEY)"
 
 [functions.init-daily-attendance]
 enabled = true
-verify_jwt = false 
+verify_jwt = true
 import_map = "./functions/init-daily-attendance/deno.json"
