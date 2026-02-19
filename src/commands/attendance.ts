@@ -48,11 +48,29 @@ export const checkoutCommand = {
 };
 
 async function handleAttendance(interaction: ChatInputCommandInteraction) {
-	if (interaction.channelId !== '1430825863926251560')
+	const attendanceChannelId = process.env.ATTENDANCE_CHANNEL_ID;
+	if (!attendanceChannelId) {
+		console.error('환경변수 조회 실패: ATTENDANCE_CHANNEL_ID');
+		await interaction.reply({
+			content: '채널 조회 실패: 관리자 문의 필요',
+			ephemeral: true,
+		});
+		return;
+	}
+
+	const attendanceChannel = await interaction.client.channels
+		.fetch(attendanceChannelId)
+		.catch(() => null);
+
+	if (
+		interaction.channelId !== attendanceChannelId ||
+		!attendanceChannel.isTextBased()
+	) {
 		return await interaction.reply({
 			content: '유효하지 않은 채널입니다.',
 			ephemeral: true,
 		});
+	}
 
 	await interaction.deferReply();
 
