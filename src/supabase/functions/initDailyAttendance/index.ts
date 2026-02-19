@@ -1,6 +1,11 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
+import dayjs from 'https://esm.sh/dayjs@1.11.10';
+import timezone from 'https://esm.sh/dayjs@1.11.10/plugin/timezone';
+import utc from 'https://esm.sh/dayjs@1.11.10/plugin/utc';
 import type { Database } from '../types/database.types.ts';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -8,7 +13,7 @@ const supabase = createClient<Database>(supabaseUrl, supabaseServiceKey);
 
 Deno.serve(async (req) => {
 	try {
-		const date = dayjs().tz('Asia/Seoul').format('YYYY-MM-DD');
+		const today = dayjs().tz('Asia/Seoul').format('YYYY-MM-DD');
 
 		const { data: holidayData } = await supabase
 			.from('holidays')
@@ -23,22 +28,19 @@ Deno.serve(async (req) => {
 			.select('id')
 			.eq('is_active', true);
 
-		if (!members || memberError)
-			throw new Error('Member Error: 멤버 조회 실패');
+		if (!members || memberError) throw new Error('멤버 조회 실패');
 
 		const dailyLog = members.map((member) => ({
-			date,
+			date: today,
 			member_id: member.id,
 			status: isHoliday ? 'excused' : 'absent',
 		}));
 
 		const { error: insertError } = await supabase
 			.from('attendance_log')
-			.insert(dailyLog, {
-				ignoreDuplicates: true,
-			} as any);
+			.upsert(dailyLog, { onConflict: 'date, member_id' });
 
-		if (insertError) throw new Error('Insert Error: 출석 로그 생성 실패');
+		if (insertError) throw new Error('출석 로그 생성 실패');
 
 		return new Response(
 			JSON.stringify({
