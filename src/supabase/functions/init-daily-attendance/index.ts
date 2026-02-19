@@ -7,8 +7,13 @@ import type { Database } from '../../types/database.types.ts';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const supabaseUrl = Deno.env.get('SUPABASE_URL');
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+if (!supabaseUrl || !supabaseServiceKey) {
+	throw new Error('Missing environment variables');
+}
+
 const supabase = createClient<Database>(supabaseUrl, supabaseServiceKey);
 
 Deno.serve(async (req) => {
