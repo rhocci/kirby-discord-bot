@@ -2,7 +2,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import dayjs from 'https://esm.sh/dayjs@1.11.10';
 import timezone from 'https://esm.sh/dayjs@1.11.10/plugin/timezone';
 import utc from 'https://esm.sh/dayjs@1.11.10/plugin/utc';
-import type { Database } from '../types/database.types.ts';
+import type { Database } from '../../types/database.types.ts';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
