@@ -58,7 +58,7 @@ async function handleAttendance(interaction: ChatInputCommandInteraction) {
 		return;
 	}
 
-	const attendanceChannel = await client.channels
+	const attendanceChannel = await interaction.client.channels
 		.fetch(attendanceChannelId)
 		.catch(() => null);
 
