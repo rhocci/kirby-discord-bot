@@ -113,30 +113,22 @@ export async function alertLunchTime(
 		.fetch(defaultChannelId)
 		.catch(() => null);
 
-	if (!defaultChannel || !(defaultChannel.type === ChannelType.GuildText)) {
-		return console.error('유효하지 않은 채널');
-	}
+	if (defaultChannel && defaultChannel.type === ChannelType.GuildText) {
+		const message =
+			status === 'start'
+				? '점심 시간입니다! 식사 맛있게 하세요~!'
+				: '점심 시간이 끝났어요!';
+		const image = IMAGE[`lunch_${status}`];
 
-	const message =
-		status === 'start'
-			? '점심 시간입니다! 식사 맛있게 하세요~!'
-			: '점심 시간이 끝났어요!';
-	const image = IMAGE[`lunch_${status}`];
+		const embed = new EmbedBuilder()
+			.setColor(colors.neon.blue)
+			.setDescription(message)
+			.setImage(image.url)
+			.setTimestamp();
 
-	const embed = new EmbedBuilder()
-		.setColor(colors.neon.blue)
-		.setDescription(message)
-		.setImage(image.url)
-		.setTimestamp();
-
-	try {
 		await defaultChannel.send({
 			embeds: [embed],
 			files: [{ attachment: image.attach, name: path.basename(image.attach) }],
 		});
-
-		console.log(`점심 알림 생성 완료: ${status}`);
-	} catch (err) {
-		console.error(`점심 알림 생성 실패: ${err}`);
 	}
 }

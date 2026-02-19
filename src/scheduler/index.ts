@@ -1,4 +1,4 @@
-import { type Client, EmbedBuilder } from 'discord.js';
+import { ChannelType, type Client, EmbedBuilder } from 'discord.js';
 import dayjs from 'dayjs';
 import nodeCron from 'node-cron';
 import {
@@ -40,7 +40,7 @@ export function initSchedulers(client: Client) {
 				)
 				.setTimestamp();
 
-			if (defaultChannel && defaultChannel.isTextBased()) {
+			if (defaultChannel && defaultChannel.type === ChannelType.GuildText) {
 				await defaultChannel.send({
 					embeds: [embed],
 				});
