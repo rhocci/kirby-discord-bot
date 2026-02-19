@@ -58,14 +58,11 @@ async function handleAttendance(interaction: ChatInputCommandInteraction) {
 		return;
 	}
 
-	const attendanceChannel = await client.channels
+	const attendanceChannel = await interaction.client.channels
 		.fetch(attendanceChannelId)
 		.catch(() => null);
 
-	if (
-		!attendanceChannel ||
-		!(attendanceChannel.type === ChannelType.GuildText)
-	) {
+	if (!attendanceChannel || !attendanceChannel.isTextBased()) {
 		return await interaction.reply({
 			content: '유효하지 않은 채널입니다.',
 			ephemeral: true,
