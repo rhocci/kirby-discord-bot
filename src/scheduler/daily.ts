@@ -50,8 +50,12 @@ export async function checkIsHoliday() {
 }
 
 export async function createDailyThread(client: Client) {
+	const excusionChannelId = process.env.EXCUSION_CHANNEL_ID;
+	if (!excusionChannelId)
+		return console.error('환경변수 조회 실패: EXCUSION_CHANNEL_ID');
+
 	const excusionChannel = await client.channels
-		.fetch('1436641965499486329')
+		.fetch(excusionChannelId)
 		.catch(() => null);
 
 	if (!excusionChannel || !(excusionChannel.type === ChannelType.GuildText)) {
@@ -101,8 +105,12 @@ export async function alertLunchTime(
 ) {
 	if (isHoliday) return;
 
+	const defaultChannelId = process.env.DEFAULT_CHANNEL_ID;
+	if (!defaultChannelId)
+		return console.error('환경변수 조회 실패: DEFAULT_CHANNEL_ID');
+
 	const defaultChannel = await client.channels
-		.fetch('1429832677531586626')
+		.fetch(defaultChannelId)
 		.catch(() => null);
 
 	if (!defaultChannel || !(defaultChannel.type === ChannelType.GuildText)) {
