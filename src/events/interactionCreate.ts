@@ -105,12 +105,15 @@ async function execute(interaction: Interaction) {
 				.setColor(colors.neon.yellow)
 				.setTimestamp();
 
+			let sentMessageId: string | undefined;
+
 			if (interaction.channel && 'send' in interaction.channel) {
-				await interaction.channel.send({
+				const sentMessage = await interaction.channel.send({
 					content: '<@&1438132990969647157> <@&1433327466834952312>',
 					embeds: [excusionEmbed],
 					components: [approvalRows],
 				});
+				sentMessageId = sentMessage.id;
 			}
 
 			try {
@@ -119,7 +122,7 @@ async function execute(interaction: Interaction) {
 						interaction.client.users.fetch(id),
 					),
 				);
-				const date = dayjs().tz('Asia/Seoul').format('YYYY월 MM월 DD일');
+				const date = dayjs().tz('Asia/Seoul').format('YYYY년 MM월 DD일');
 
 				await Promise.all(
 					admins.map((admin) =>
@@ -135,7 +138,7 @@ async function execute(interaction: Interaction) {
 											{ name: '사유', value: reason },
 										)
 										.setURL(
-											`https://discord.com/channels/${interaction.guildId}/${interaction.channelId}/${interaction.message?.id}`,
+											`https://discord.com/channels/${interaction.guildId}/${interaction.channelId}/${sentMessageId}`,
 										)
 										.setColor(colors.neon.pink),
 								],
