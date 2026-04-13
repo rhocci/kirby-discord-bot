@@ -18,7 +18,17 @@ const supabase = createClient<Database>(supabaseUrl, supabaseServiceKey);
 
 Deno.serve(async (req: Request) => {
 	try {
-		const today = dayjs().tz('Asia/Seoul').format('YYYY-MM-DD');
+		const now = dayjs().tz('Asia/Seoul');
+		const dayOfWeek = now.day();
+
+		if (dayOfWeek === 0 || dayOfWeek === 6) {
+			return new Response(
+				JSON.stringify({ message: 'Weekend, skipping attendance init' }),
+				{ headers: { 'Content-Type': 'application/json' }, status: 200 },
+			);
+		}
+
+		const today = now.format('YYYY-MM-DD');
 
 		const { data: holidayData } = await supabase
 			.from('holidays')

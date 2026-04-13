@@ -17,8 +17,11 @@ type WeeklyMemberLog = {
 };
 
 async function getWeeklyLog(today: Dayjs): Promise<void | WeeklyMemberLog[]> {
-	const startOfWeek = today.startOf('week').format('YYYY-MM-DD');
-	const endOfWeek = today.endOf('week').format('YYYY-MM-DD');
+	const day = today.day();
+	const monday = today.subtract(day === 0 ? 6 : day - 1, 'day').startOf('day');
+	const friday = monday.add(4, 'day');
+	const startOfWeek = monday.format('YYYY-MM-DD');
+	const endOfWeek = friday.format('YYYY-MM-DD');
 
 	const { data: weeklyData, error: weeklyError } = await supabase
 		.from('attendance_log')
@@ -79,8 +82,9 @@ function getWeekOfMonth(date: Dayjs) {
 export async function createWeeklyStats(client: Client) {
 	const today = dayjs().tz('Asia/Seoul');
 	const weekOfMonth = getWeekOfMonth(today);
-	const startOfWeek = today.startOf('week');
-	const endOfWeek = today.endOf('week');
+	const day = today.day();
+	const startOfWeek = today.subtract(day === 0 ? 6 : day - 1, 'day').startOf('day');
+	const endOfWeek = startOfWeek.add(4, 'day');
 
 	const weeklyLog = await getWeeklyLog(today);
 	const statsChannel = await client.channels
