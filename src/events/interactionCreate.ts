@@ -56,11 +56,10 @@ async function execute(interaction: Interaction) {
 				});
 				return;
 			}
-
-			timestamps.set(interaction.user.id, inputTime);
-			setTimeout(() => timestamps.delete(interaction.user.id), cooldownAmount);
 		}
 
+		timestamps.set(interaction.user.id, inputTime);
+		setTimeout(() => timestamps.delete(interaction.user.id), cooldownAmount);
 		await command.execute(interaction);
 	}
 
