@@ -17,6 +17,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const token = process.env.DISCORD_TOKEN;
+if (!token) {
+	console.error('환경변수 조회 실패: DISCORD_TOKEN');
+	process.exit(1);
+}
 const intents = new IntentsBitField().add(
 	IntentsBitField.Flags.Guilds,
 	IntentsBitField.Flags.GuildMessages,

@@ -56,11 +56,10 @@ async function execute(interaction: Interaction) {
 				});
 				return;
 			}
-
-			timestamps.set(interaction.user.id, inputTime);
-			setTimeout(() => timestamps.delete(interaction.user.id), cooldownAmount);
 		}
 
+		timestamps.set(interaction.user.id, inputTime);
+		setTimeout(() => timestamps.delete(interaction.user.id), cooldownAmount);
 		await command.execute(interaction);
 	}
 
@@ -106,12 +105,15 @@ async function execute(interaction: Interaction) {
 				.setColor(colors.neon.yellow)
 				.setTimestamp();
 
+			let sentMessageId: string | undefined;
+
 			if (interaction.channel && 'send' in interaction.channel) {
-				await interaction.channel.send({
+				const sentMessage = await interaction.channel.send({
 					content: '<@&1438132990969647157> <@&1433327466834952312>',
 					embeds: [excusionEmbed],
 					components: [approvalRows],
 				});
+				sentMessageId = sentMessage.id;
 			}
 
 			try {
@@ -120,7 +122,7 @@ async function execute(interaction: Interaction) {
 						interaction.client.users.fetch(id),
 					),
 				);
-				const date = dayjs().tz('Asia/Seoul').format('YYYY월 MM월 DD일');
+				const date = dayjs().tz('Asia/Seoul').format('YYYY년 MM월 DD일');
 
 				await Promise.all(
 					admins.map((admin) =>
@@ -136,7 +138,7 @@ async function execute(interaction: Interaction) {
 											{ name: '사유', value: reason },
 										)
 										.setURL(
-											`https://discord.com/channels/${interaction.guildId}/${interaction.channelId}/${interaction.message?.id}`,
+											`https://discord.com/channels/${interaction.guildId}/${interaction.channelId}/${sentMessageId}`,
 										)
 										.setColor(colors.neon.pink),
 								],
@@ -196,21 +198,21 @@ async function applyExcusion(interaction: ButtonInteraction) {
 
 async function approveExcusion(interaction: ButtonInteraction) {
 	const originalEmbed = interaction.message.embeds[0] as Embed;
-	const updatedEmbed = EmbedBuilder.from(originalEmbed)
-		.setTitle('✅ 공결신청 승인됨')
-		.setColor(colors.neon.green);
 	const applicantId = originalEmbed?.fields
 		.find((f) => f.name === '신청자')
 		?.value?.match(/\d+/)?.[0];
 
-	await interaction.update({
-		embeds: [updatedEmbed],
-		components: [],
-	});
-
 	if (!applicantId) {
-		return console.error('신청자 ID 찾기 실패');
+		console.error('신청자 ID 찾기 실패');
+		return interaction.reply({
+			content: '⚠️ 신청자 ID를 찾을 수 없습니다.',
+			flags: MessageFlags.Ephemeral,
+		});
 	}
+
+	const submittedDate = originalEmbed.timestamp
+		? dayjs(originalEmbed.timestamp).tz('Asia/Seoul').format('YYYY-MM-DD')
+		: dayjs(interaction.createdAt).tz('Asia/Seoul').format('YYYY-MM-DD');
 
 	const { data: member, error: memberError } = await supabase
 		.from('members')
@@ -218,24 +220,36 @@ async function approveExcusion(interaction: ButtonInteraction) {
 		.eq('discord_id', applicantId)
 		.single();
 
-	if (memberError) {
-		return console.error('유효하지 않은 구성원');
+	if (memberError || !member) {
+		console.error('유효하지 않은 구성원');
+		return interaction.reply({
+			content: '⚠️ 유효하지 않은 구성원입니다.',
+			flags: MessageFlags.Ephemeral,
+		});
 	}
 
 	const { error: updateError } = await supabase
 		.from('attendance_log')
-		.update({
-			status: 'excused',
-		})
+		.update({ status: 'excused' })
 		.eq('member_id', member.id)
-		.eq(
-			'date',
-			dayjs(interaction.createdAt).tz('Asia/Seoul').format('YYYY-MM-DD'),
-		);
+		.eq('date', submittedDate);
 
 	if (updateError) {
-		return console.error(`출석 DB 업데이트 실패: ${updateError.message}`);
+		console.error(`출석 DB 업데이트 실패: ${updateError.message}`);
+		return interaction.reply({
+			content: '⚠️ DB 업데이트에 실패했습니다.',
+			flags: MessageFlags.Ephemeral,
+		});
 	}
+
+	const updatedEmbed = EmbedBuilder.from(originalEmbed)
+		.setTitle('✅ 공결신청 승인됨')
+		.setColor(colors.neon.green);
+
+	await interaction.update({
+		embeds: [updatedEmbed],
+		components: [],
+	});
 
 	console.log(`출석 DB 업데이트: ${interaction.user.username} 공결`);
 }
